@@ -8,11 +8,14 @@ namespace FormulaConvert.Tests;
 public class SymbolSweepTests
 {
     public static IEnumerable<object[]> Rows() =>
-        CsvResource.ReadRows("symbols.csv").Where(r => !NaryTable.TryGetByCommand(r[0], out _)) // n-ary commands parse to Nary nodes (NaryFunctionTests)
-            .Select(r => new object[] { r[0], r[1] });
+        CsvResource.ReadRows("symbols.csv").Select(r => new object[] { r[0], r[1] });
+
+    // N-ary commands (\coprod, \oint) parse to Nary nodes, not m:t text; covered by NaryFunctionTests.
+    public static IEnumerable<object[]> ParseRows() =>
+        Rows().Where(r => !NaryTable.TryGetByCommand((string)r[0], out _));
 
     [Theory]
-    [MemberData(nameof(Rows))]
+    [MemberData(nameof(ParseRows))]
     public void Command_parses_to_its_codepoint(string command, string hex)
     {
         _ = hex;
@@ -35,7 +38,6 @@ public class SymbolSweepTests
 
     public static IEnumerable<object[]> NonAsciiCodepoints() =>
         CsvResource.ReadRows("symbols.csv").Select(r => CsvResource.ParseHex(r[1])).Where(cp => cp >= 0x80)
-            .Where(cp => !NaryTable.TryGetByChar(char.ConvertFromUtf32(cp), out _))
             .Distinct().Select(cp => new object[] { cp });
 
     [Theory]
@@ -64,6 +66,7 @@ public class SymbolSweepTests
         if (cp is '^' or '~' or '\'') return $"\\char\"{cp:X2}"; // literal script marks round-trip via \char
         if (cp < 0x80)
             return ch == "\\" ? "\\backslash" : "#$%&_{}".Contains(ch) ? "\\" + ch : ch;
+        if (NaryTable.TryGetByChar(ch, out _)) return ch; // plain runs keep n-ary characters literal
         return SymbolTable.TryGetCommand(cp, out var cmd) ? cmd : ch;
     }
 }

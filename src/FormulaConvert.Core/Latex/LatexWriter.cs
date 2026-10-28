@@ -77,6 +77,10 @@ internal static partial class LatexWriter
             else if (EscapedChars.Contains(c)) b.Command("\\" + c);
             else b.Text(c.ToString());
         }
+        else if (NaryTable.TryGetByChar(rune.ToString(), out _))
+        {
+            b.Text(rune.ToString()); // a command would re-parse as an operator that swallows the next atom
+        }
         else if (SymbolTable.TryGetCommand(cp, out var command))
         {
             b.Command(command);

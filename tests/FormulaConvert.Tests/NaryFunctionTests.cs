@@ -64,6 +64,11 @@ public class NaryFunctionTests
     [Fact] public void Double_sup_is_an_error() =>
         Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\sum^a^b x"));
 
+    [Fact] public void Plain_run_coprod_stays_a_run() => Check("∐", R("∐"));
+    [Fact] public void Plain_run_oint_stays_a_run() => Check("∮", R("∮"));
+    [Fact] public void Plain_run_with_nary_char_inside() => Check("a∑b", R("a∑b"));
+    [Fact] public void Plain_run_nary_char_does_not_swallow_next_atom() => Check("∐x", R("∐x"));
+
     [Fact] public void Sin() => Check("\\sin x", Fn(FName("sin"), R("x")));
     [Fact] public void Sin_parenthesized() => Check("\\sin(x+1)", Fn(FName("sin"), R("(x+1)")));
     [Fact] public void Sin_bracketed() => Check("\\sin[x]", Fn(FName("sin"), R("[x]")));
