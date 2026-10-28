@@ -8,6 +8,19 @@ namespace FormulaConvert.Latex;
 /// Recursive-descent LaTeX parser producing the <see cref="FormulaNode"/> AST. One <see cref="Run"/> per character.
 /// Command handlers (see <see cref="CommandTable"/>) use the public members to read their arguments.
 /// </summary>
+/// <summary>The kind of row being parsed; decides which tokens terminate it.</summary>
+internal enum RowContext
+{
+    /// <summary>Outside any construct.</summary>
+    Top,
+    /// <summary>Inside <c>{…}</c>.</summary>
+    Group,
+    /// <summary>Inside an optional <c>[…]</c> argument.</summary>
+    Optional,
+    /// <summary>Inside <c>\left … \right</c> (ended by <c>\middle</c> or <c>\right</c>).</summary>
+    Left,
+}
+
 internal sealed partial class LatexParser
 {
     private const int MaxAliasDepth = 32;
@@ -20,8 +33,8 @@ internal sealed partial class LatexParser
     private readonly NestingGuard _nesting;
     private int _index;
 
-    /// <summary>One entry per open <c>{</c> (false) or optional <c>[</c> (true); decides whether <c>]</c> ends a row.</summary>
-    private readonly Stack<bool> _contexts = new();
+    /// <summary>One entry per open construct; the innermost decides which tokens end a row.</summary>
+    private readonly Stack<RowContext> _contexts = new();
 
     private LatexParser(string latex, List<Diagnostic> diagnostics, CommandTable commands, int? reportedPosition, int aliasDepth, NestingGuard nesting)
     {
@@ -128,13 +141,26 @@ internal sealed partial class LatexParser
         return Rowify(items);
     }
 
-    /// <summary>Tokens that end a row. Later contexts add <c>\right</c>, <c>\end</c>, <c>&amp;</c>, <c>\\</c>.</summary>
-    private bool IsRowTerminator(Token t) => t.Kind switch
+    /// <summary>
+    /// Tokens that end a row: <c>}</c> and end of input always; <c>]</c> in an <see cref="RowContext.Optional"/> row;
+    /// <c>\right</c> and <c>\middle</c> in a <see cref="RowContext.Left"/> row. Later contexts add <c>\end</c>, <c>&amp;</c>, <c>\\</c>.
+    /// </summary>
+    private bool IsRowTerminator(Token t)
     {
-        TokenKind.EndOfInput or TokenKind.EndGroup => true,
-        TokenKind.RBracket => _contexts.Count > 0 && _contexts.Peek(),
-        _ => false,
-    };
+        var context = _contexts.Count > 0 ? _contexts.Peek() : RowContext.Top;
+        return t.Kind switch
+        {
+            TokenKind.EndOfInput or TokenKind.EndGroup => true,
+            TokenKind.RBracket => context == RowContext.Optional,
+            TokenKind.Command => context == RowContext.Left && t.Text is "\\right" or "\\middle",
+            _ => false,
+        };
+    }
+
+    /// <summary>Opens a nested row of the given kind; pair with <see cref="PopContext"/> around <see cref="ParseRowRest"/>.</summary>
+    public void PushContext(RowContext context) => _contexts.Push(context);
+
+    public void PopContext() => _contexts.Pop();
 
     /// <summary>
     /// Scripts and primes attached after an atom. An explicit <c>{}</c> carrying scripts and followed by another
@@ -180,7 +206,7 @@ internal sealed partial class LatexParser
         if (open.Kind != TokenKind.LBracket) return null;
         EnterNesting();
         Next();
-        _contexts.Push(true);
+        _contexts.Push(RowContext.Optional);
         var node = ParseRowRest();
         _contexts.Pop();
         ExitNesting();
@@ -214,7 +240,7 @@ internal sealed partial class LatexParser
     {
         EnterNesting();
         var open = Next();
-        _contexts.Push(false);
+        _contexts.Push(RowContext.Group);
         var node = ParseRowRest();
         _contexts.Pop();
         ExitNesting();

@@ -33,8 +33,11 @@ internal static partial class LatexWriter
             case Frac f:
                 WriteFrac(f, b);
                 break;
-            case Delimited d when IsBinomial(d):
-                WriteBinomial(d, b);
+            case Delimited d when d.IsBinomial(out var top, out var bottom):
+                WriteBinomial(top, bottom, b);
+                break;
+            case Delimited d:
+                WriteDelimited(d, b);
                 break;
             case Script s:
                 WriteScript(s, b);

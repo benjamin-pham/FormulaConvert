@@ -22,12 +22,8 @@ internal static class FractionCommands
 
         t.AddInfix("\\over", (p, name, left) => Infix(p, name, left, (n, d) => new Frac(n, d, FracKind.Bar)));
         t.AddInfix("\\atop", (p, name, left) => Infix(p, name, left, (n, d) => new Frac(n, d, FracKind.NoBar)));
-        t.AddInfix("\\choose", (p, name, left) => Infix(p, name, left, Binomial));
+        t.AddInfix("\\choose", (p, name, left) => Infix(p, name, left, Delimited.Binomial));
     }
-
-    /// <summary><c>\binom</c> shape: a default-parenthesis <see cref="Delimited"/> around a bar-less fraction.</summary>
-    internal static FormulaNode Binomial(FormulaNode top, FormulaNode bottom) =>
-        new Delimited("(", ")", "", [new Frac(top, bottom, FracKind.NoBar)]);
 
     private static FormulaNode Fraction(LatexParser p, FracKind kind, string? lossyName = null)
     {
@@ -55,7 +51,7 @@ internal static class FractionCommands
         var top = p.ReadArgument();
         var bottom = p.ReadArgument();
         if (lossyName != null) WarnStyle(p, lossyName, "\\binom", at);
-        return Binomial(top, bottom);
+        return Delimited.Binomial(top, bottom);
     }
 
     /// <summary><c>\pdiff{f}{x}</c> is <c>\frac{\partial f}{\partial x}</c>.</summary>
@@ -103,6 +99,8 @@ internal static class FractionCommands
                 case TokenKind.Command when t.Text is "\\left" or "\\begin":
                     depth++;
                     break;
+                case TokenKind.Command when t.Text == "\\middle" && depth == 0:
+                    return -1;
                 case TokenKind.Command when t.Text is "\\right" or "\\end":
                     if (depth == 0) return -1;
                     depth--;

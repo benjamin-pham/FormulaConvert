@@ -41,7 +41,26 @@ public sealed record PreScript(FormulaNode Base, FormulaNode? Sub, FormulaNode? 
 
 public sealed record Nary(string Chr, FormulaNode? Sub, FormulaNode? Sup, FormulaNode Body, bool SubSupLimits) : FormulaNode;
 
-public sealed record Delimited(string Open, string Close, string Separator, IReadOnlyList<FormulaNode> Parts) : FormulaNode;
+/// <summary>Brackets around one or more parts; <c>""</c> for Open/Close/Separator means absent.</summary>
+public sealed record Delimited(string Open, string Close, string Separator, IReadOnlyList<FormulaNode> Parts) : FormulaNode
+{
+    /// <summary>The <c>\binom</c> shape: default parentheses around one bar-less fraction.</summary>
+    public static Delimited Binomial(FormulaNode top, FormulaNode bottom) =>
+        new("(", ")", "", [new Frac(top, bottom, FracKind.NoBar)]);
+
+    /// <summary>True for the <see cref="Binomial"/> shape (default parentheses, no separator, one bar-less fraction).</summary>
+    public bool IsBinomial(out FormulaNode top, out FormulaNode bottom)
+    {
+        if (this is { Open: "(", Close: ")", Separator: "", Parts: [Frac { Kind: FracKind.NoBar } f] })
+        {
+            top = f.Num;
+            bottom = f.Den;
+            return true;
+        }
+        top = bottom = FormulaRow.Empty;
+        return false;
+    }
+}
 
 public sealed record Matrix(IReadOnlyList<IReadOnlyList<FormulaNode>> Rows, string? ColumnAlign) : FormulaNode;
 

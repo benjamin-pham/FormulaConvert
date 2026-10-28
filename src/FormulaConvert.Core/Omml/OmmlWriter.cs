@@ -69,7 +69,8 @@ internal static partial class OmmlWriter
     private static XElement WriteNode(FormulaNode node) => node switch
     {
         Frac f => WriteFrac(f),
-        Delimited { Parts: [Frac { Kind: FracKind.NoBar }] } d when d is { Open: "(", Close: ")" } => WriteBinomial(d),
+        Delimited d when d.IsBinomial(out _, out _) => WriteBinomial(d),
+        Delimited d => WriteDelimited(d),
         Script s => WriteScript(s),
         PreScript s => WritePreScript(s),
         Radical r => WriteRadical(r),

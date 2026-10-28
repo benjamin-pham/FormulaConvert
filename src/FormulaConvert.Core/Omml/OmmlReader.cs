@@ -45,8 +45,8 @@ internal static partial class OmmlReader
                 case "f":
                     items.Add(ReadFrac(el, d));
                     break;
-                case "d" when IsBinomial(el):
-                    items.Add(ReadBinomial(el, d));
+                case "d":
+                    items.Add(ReadDelimited(el, d));
                     break;
                 case "sSub":
                     items.Add(ReadSubSup(el, true, false, d));

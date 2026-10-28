@@ -23,17 +23,13 @@ internal static partial class LatexWriter
         }
     }
 
-    /// <summary>A binomial (default-parenthesis <see cref="Delimited"/> around one bar-less fraction) as <c>\binom{n}{k}</c>.</summary>
-    private static void WriteBinomial(Delimited d, LatexBuilder b)
+    /// <summary>A binomial (see <see cref="Delimited.IsBinomial"/>) as <c>\binom{n}{k}</c>.</summary>
+    private static void WriteBinomial(FormulaNode top, FormulaNode bottom, LatexBuilder b)
     {
-        var f = (Frac)d.Parts[0];
         b.Command("\\binom");
-        WriteGroup(f.Num, b);
-        WriteGroup(f.Den, b);
+        WriteGroup(top, b);
+        WriteGroup(bottom, b);
     }
-
-    private static bool IsBinomial(Delimited d) =>
-        d is { Open: "(", Close: ")", Parts: [Frac { Kind: FracKind.NoBar }] };
 
     private static void WriteGroup(FormulaNode node, LatexBuilder b)
     {
