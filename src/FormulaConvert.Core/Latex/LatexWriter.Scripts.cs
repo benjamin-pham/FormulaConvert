@@ -123,10 +123,28 @@ internal static partial class LatexWriter
         b.Command("\\sqrt");
         if (r.Degree != null)
         {
-            b.Text("[");
-            WriteNode(r.Degree, b);
-            b.Text("]");
+            var degree = new LatexBuilder(b.Nesting);
+            WriteNode(r.Degree, degree);
+            var text = degree.ToString();
+            // A ] outside braces would end the optional argument early: brace the whole degree.
+            b.Text(HasUnbracedCloseBracket(text) ? "[{" + text + "}]" : "[" + text + "]");
         }
         WriteGroup(r.Body, b);
+    }
+
+    private static bool HasUnbracedCloseBracket(string latex)
+    {
+        int depth = 0;
+        for (int i = 0; i < latex.Length; i++)
+        {
+            switch (latex[i])
+            {
+                case '\\': i++; break; // skip the escaped character (\} \{ …)
+                case '{': depth++; break;
+                case '}': depth--; break;
+                case ']' when depth == 0: return true;
+            }
+        }
+        return false;
     }
 }

@@ -91,6 +91,11 @@ public class NaryFunctionTests
         Check("\\operatorname{argth}(\\theta)", Fn(FName("argth"), R("(θ)")));
     [Fact] public void Operatorname_with_table_name_writes_command() =>
         Check("\\operatorname{sin} x", Fn(FName("sin"), R("x")), "\\sin x");
+    // A script whose base starts with ( must be braced, or the function would read a bracketed argument.
+    [Fact] public void Function_operand_script_on_open_paren() =>
+        Check("\\sin{(^2}", Fn(FName("sin"), SSup(R("("), R("2"))));
+    [Fact] public void Function_operand_script_on_open_bracket() =>
+        Check("\\sin{[^2}", Fn(FName("sin"), SSup(R("["), R("2"))));
     [Fact] public void Function_without_operand() => Check("\\sin", Fn(FName("sin"), ""));
     [Fact] public void Log_sub() => Check("\\log_2 8", Fn(SSub(FName("log"), R("2")), R("8")));
     [Fact] public void Lim_sup_is_script() =>

@@ -166,6 +166,11 @@ public class EnvironmentTests
         Assert.True(Xml.SameXml(OMath(Mx([[R("a")], [""], [R("b")]])), FormulaConverter.LatexToOmml(latex).Output));
     }
 
+    // A row starting with [ must not be read as the row-spacing argument of the preceding \\.
+    [Fact] public void Row_starting_with_bracket() =>
+        Check("\\begin{matrix}a\\\\{}[b\\end{matrix}", Mx([[R("a")], [R("[b")]]));
+    [Fact] public void Equation_row_starting_with_bracket() =>
+        Check("\\begin{gathered}a\\\\{}[b\\end{gathered}", EqA(R("a"), R("[b")));
 
     [Fact]
     public void Cell_content_is_full_math() =>

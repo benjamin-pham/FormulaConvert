@@ -130,8 +130,10 @@ internal sealed class LatexBuilder
     private readonly StringBuilder _sb = new();
     private Pending _pending;
 
-    /// <summary>Depth guard for <see cref="LatexWriter.WriteNode"/> recursion.</summary>
-    public NestingGuard Nesting { get; } = new(NestingGuard.XmlLimit);
+    public LatexBuilder(NestingGuard? nesting = null) => Nesting = nesting ?? new NestingGuard(NestingGuard.XmlLimit);
+
+    /// <summary>Depth guard for <see cref="LatexWriter.WriteNode"/> recursion (shared with nested builders).</summary>
+    public NestingGuard Nesting { get; }
 
     /// <summary>Appends a control sequence such as <c>\alpha</c> or <c>\{</c>.</summary>
     public LatexBuilder Command(string command)

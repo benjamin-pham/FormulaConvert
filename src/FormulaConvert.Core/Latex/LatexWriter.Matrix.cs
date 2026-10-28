@@ -18,7 +18,7 @@ internal static partial class LatexWriter
         }
         for (int i = 0; i < m.Rows.Count; i++)
         {
-            if (i > 0) b.Text("\\\\");
+            if (i > 0) RowBreak(m.Rows[i].Count > 0 && StartsWithOpenBracket(m.Rows[i][0]), b);
             for (int j = 0; j < m.Rows[i].Count; j++)
             {
                 if (j > 0) b.Text("&");
@@ -34,7 +34,7 @@ internal static partial class LatexWriter
         b.Text("\\begin{" + name + "}");
         for (int i = 0; i < a.Rows.Count; i++)
         {
-            if (i > 0) b.Text("\\\\");
+            if (i > 0) RowBreak(StartsWithOpenBracket(a.Rows[i]), b);
             var items = new List<FormulaNode>();
             Flatten(a.Rows[i], items);
             foreach (var item in items)
@@ -54,6 +54,19 @@ internal static partial class LatexWriter
         }
         b.Text("\\end{" + name + "}");
     }
+
+    /// <summary><c>\\</c>; followed by <c>{}</c> when the next row starts with <c>[</c>, which would otherwise read as a row-spacing argument.</summary>
+    private static void RowBreak(bool nextStartsWithBracket, LatexBuilder b) =>
+        b.Text(nextStartsWithBracket ? "\\\\{}" : "\\\\");
+
+    /// <summary>True when the LaTeX written for <paramref name="node"/> may begin with <c>[</c>.</summary>
+    private static bool StartsWithOpenBracket(FormulaNode node) =>
+        Flatten(node) is [var first, ..] && first switch
+        {
+            Run r => r.Text.StartsWith('['),
+            Script s => StartsWithOpenBracket(s.Base),
+            _ => false,
+        };
 
     private static bool HasAlignmentMark(EqArray a)
     {

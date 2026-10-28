@@ -88,12 +88,16 @@ internal static partial class LatexWriter
             {
                 Run r => RuneCount(r) == 1 && r.Text != " " && !(function && r.Text is "(" or "["),
                 PreScript => false,
-                Script s => Flatten(s.Base).Count > 0,
+                // A function argument starting with ( or [ is read up to the matching bracket: brace a script on one.
+                Script s => Flatten(s.Base).Count > 0 && !(function && StartsWithBracket(s.Base)),
                 _ => true,
             };
         if (bare) WriteNode(body, b);
         else WriteGroup(body, b);
     }
+
+    private static bool StartsWithBracket(FormulaNode node) =>
+        Flatten(node) is [Run r, ..] && r.Text.Length > 0 && r.Text[0] is '(' or '[';
 
     /// <summary>Runs forming text that starts with <c>(</c>/<c>[</c> and ends with its matching closing character.</summary>
     private static bool IsBracketed(List<FormulaNode> flat)

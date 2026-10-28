@@ -64,6 +64,9 @@ public class ScriptTests
     [Fact] public void Sqrt() => Check("\\sqrt{x}", Rad(R("x")));
     [Fact] public void Sqrt_single_atom() => Check("\\sqrt x", Rad(R("x")), "\\sqrt{x}");
     [Fact] public void Sqrt_degree() => Check("\\sqrt[3]{x}", Rad(R("x"), R("3")));
+    [Fact] public void Sqrt_degree_with_closing_bracket() => Check("\\sqrt[{]}]{x}", Rad(R("x"), R("]")));
+    [Fact] public void Sqrt_degree_with_closing_bracket_in_script() =>
+        Check("\\sqrt[{]^2}]{x}", Rad(R("x"), SSup(R("]"), R("2"))));
     [Fact] public void Sqrt_empty() => Check("\\sqrt{}", Rad(""));
     [Fact] public void Sqrt_with_sup() => Check("\\sqrt{x}^2", SSup(Rad(R("x")), R("2")));
     [Fact] public void Surd() => Check("\\surd", R("√"), "\\surd");
