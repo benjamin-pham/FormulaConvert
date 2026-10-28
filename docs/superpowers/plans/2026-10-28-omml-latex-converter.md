@@ -358,7 +358,7 @@
 - Consumes: `AccentTable`, `SymbolTable`, `Accent`, `Bar`, `GroupChar`, `Limit`.
 - Produces: `AccentCommands.Register`, `OverUnderCommands.Register`.
 
-- [ ] **Step 1: Write the failing tests** (`Ac(chr,e)` = `<m:acc><m:accPr><m:chr m:val="chr"/></m:accPr><m:e>e</m:e></m:acc>`; `Br(top?,e)` = `<m:bar>[<m:barPr><m:pos m:val="bot"/></m:barPr>]<m:e>…</m:e></m:bar>` (top là mặc định); `Gc(chr,top,e)` = `<m:groupChr><m:groupChrPr><m:chr m:val="chr"/><m:pos m:val="top|bot"/></m:groupChrPr><m:e>…</m:e></m:groupChr>`; `LU(e,lim)`=`m:limUpp`, `LL(e,lim)`=`m:limLow`):
+- [ ] **Step 1: Write the failing tests** (`Ac(chr,e)` = `<m:acc><m:accPr><m:chr m:val="chr"/></m:accPr><m:e>e</m:e></m:acc>`; `Br(top,e)` = `<m:bar><m:barPr><m:pos m:val="top|bot"/></m:barPr><m:e>…</m:e></m:bar>` (luôn ghi `m:pos`; theo ECMA-376 thiếu `m:pos` nghĩa là `bot` — gạch dưới); `Gc(chr,top,e)` = `<m:groupChr><m:groupChrPr><m:chr m:val="chr"/><m:pos m:val="top|bot"/></m:groupChrPr><m:e>…</m:e></m:groupChr>`; `LU(e,lim)`=`m:limUpp`, `LL(e,lim)`=`m:limLow`):
 
 | Latex | OmmlInner | Canonical |
 |---|---|---|

@@ -12,11 +12,11 @@ internal static partial class OmmlReader
         return new Accent(chr, ReadContent(el.Element(M + "e"), d));
     }
 
-    /// <summary><c>m:bar</c>: <c>m:pos</c> <c>bot</c> is the underline, anything else the overline.</summary>
+    /// <summary><c>m:bar</c>: <c>m:pos</c> <c>top</c> is the overline; <c>bot</c> or no <c>m:pos</c> (the ECMA-376 default) the underline.</summary>
     private static FormulaNode ReadBar(XElement el, List<Diagnostic> d)
     {
         var pos = (string?)el.Element(M + "barPr")?.Element(M + "pos")?.Attribute(M + "val");
-        return new Bar(pos != "bot", ReadContent(el.Element(M + "e"), d));
+        return new Bar(pos == "top", ReadContent(el.Element(M + "e"), d));
     }
 
     /// <summary><c>m:groupChr</c>; the defaults are an underbrace (U+23DF) below the body.</summary>

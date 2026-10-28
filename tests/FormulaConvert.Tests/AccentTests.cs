@@ -12,7 +12,7 @@ public class AccentTests
         $"<m:acc><m:accPr><m:chr m:val=\"{chr}\"/></m:accPr><m:e>{e}</m:e></m:acc>";
 
     private static string Br(bool top, string e) =>
-        $"<m:bar>{(top ? "" : "<m:barPr><m:pos m:val=\"bot\"/></m:barPr>")}<m:e>{e}</m:e></m:bar>";
+        $"<m:bar><m:barPr><m:pos m:val=\"{(top ? "top" : "bot")}\"/></m:barPr><m:e>{e}</m:e></m:bar>";
 
     private static string Gc(string chr, bool top, string e) =>
         $"<m:groupChr><m:groupChrPr><m:chr m:val=\"{chr}\"/><m:pos m:val=\"{(top ? "top" : "bot")}\"/></m:groupChrPr><m:e>{e}</m:e></m:groupChr>";
@@ -67,6 +67,12 @@ public class AccentTests
     [Fact] public void Bar_with_explicit_top_position_reads_as_top() =>
         Assert.Equal("\\overline{x}",
             FormulaConverter.OmmlToLatex(OMath($"<m:bar><m:barPr><m:pos m:val=\"top\"/></m:barPr><m:e>{R("x")}</m:e></m:bar>")).Output);
+
+    // ECMA-376: a missing m:pos on m:bar means bot (underline).
+    [Fact] public void Bar_without_position_reads_as_underline() =>
+        Assert.Equal("\\underline{x}", FormulaConverter.OmmlToLatex(OMath($"<m:bar><m:e>{R("x")}</m:e></m:bar>")).Output);
+    [Fact] public void Bar_with_empty_properties_reads_as_underline() =>
+        Assert.Equal("\\underline{x}", FormulaConverter.OmmlToLatex(OMath($"<m:bar><m:barPr/><m:e>{R("x")}</m:e></m:bar>")).Output);
 
     [Fact] public void Overset() => Check("\\overset{a}{x}", LU(R("x"), R("a")));
     [Fact] public void Stackrel() => Check("\\stackrel{a}{x}", LU(R("x"), R("a")), "\\overset{a}{x}");
