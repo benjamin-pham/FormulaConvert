@@ -293,7 +293,7 @@
 | `\left. x \right)` | `begChr=""` | |
 | `\left(a\middle|b\right)` | `sepChr="|"`, hai `m:e` | |
 | `\left\lparen \frac1x \right\rbrack` | `begChr` `(` `endChr` `]` | `\left(\frac{1}{x}\right]` |
-| `\bigl( x \bigr)` | `R("(x)")` + 1 `lossy` | `(x)` |
+| `\bigl( x \bigr)` | `R("(x)")` + 2 `lossy` (một cho mỗi lệnh cỡ) | `(x)` |
 | `\left(\left[x\right]\right)` | lồng | |
 | `\left(` (thiếu `\right`) | `FormulaParseException`, position = vị trí `\left` | |
 | `\right)` lạc | exception | |
