@@ -51,7 +51,7 @@ public class CatalogTests(ITestOutputHelper output)
             + @"\hat \vec \overline \underline \overbrace \underbrace \overset \underset \overunderset \stackrel \xrightarrow \boxed \cancel \bcancel \xcancel "
             + @"\enclose \phantom \hphantom \vphantom \smash \mathbf \mathit \mathbfit \mathrm \mathbb \mathcal \mathscr \mathfrak \mathsf \mathtt \text \textrm "
             + @"\operatorname \sum \int \prod \limits \nolimits").Split(' ');
-        var missing = commands.Where(c => !CommandTable.Default.Has(c) && CommandClassifier.Categories(c).Count == 0).ToList();
+        var missing = commands.Where(c => !CommandTable.Default.Has(c)).ToList();
         Assert.True(missing.Count == 0, "Not registered: " + string.Join(' ', missing));
     }
 

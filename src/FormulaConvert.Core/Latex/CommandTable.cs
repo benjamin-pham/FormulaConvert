@@ -36,6 +36,7 @@ internal sealed class CommandTable
         BoxCommands.Register(table);
         StyleCommands.Register(table);
         OutOfScopeCommands.Register(table);
+        NegationCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }
