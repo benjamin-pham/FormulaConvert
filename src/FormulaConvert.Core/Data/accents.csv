@@ -1,0 +1,16 @@
+# command,codepoint_hex (first row per codepoint is canonical)
+\hat,0302
+\widehat,0302
+\tilde,0303
+\widetilde,0303
+\vec,20D7
+\dot,0307
+\ddot,0308
+\dddot,20DB
+\ddddot,20DC
+\bar,0304
+\check,030C
+\breve,0306
+\mathring,030A
+\acute,0301
+\grave,0300

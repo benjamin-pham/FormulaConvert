@@ -1,0 +1,21 @@
+# command,codepoint_hex,subsup_default (first row per codepoint is canonical)
+\sum,2211,false
+\prod,220F,false
+\coprod,2210,false
+\int,222B,true
+\iint,222C,true
+\iiint,222D,true
+\oint,222E,true
+\oiint,222F,true
+\oiiint,2230,true
+\intop,222B,true
+\smallint,222B,true
+\bigcup,22C3,false
+\bigcap,22C2,false
+\bigvee,22C1,false
+\bigwedge,22C0,false
+\biguplus,2A04,false
+\bigotimes,2A02,false
+\bigoplus,2A01,false
+\bigodot,2A00,false
+\bigsqcup,2A06,false
