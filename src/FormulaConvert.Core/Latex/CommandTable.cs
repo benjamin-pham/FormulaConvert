@@ -34,6 +34,7 @@ internal sealed class CommandTable
         AccentCommands.Register(table);
         OverUnderCommands.Register(table);
         BoxCommands.Register(table);
+        StyleCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

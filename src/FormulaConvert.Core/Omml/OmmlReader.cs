@@ -40,7 +40,7 @@ internal static partial class OmmlReader
                 case "ctrlPr":
                     break;
                 case "r":
-                    if (ReadRun(el) is { } run) items.Add(run);
+                    if (ReadRun(el, d) is { } run) items.Add(run);
                     break;
                 case "f":
                     items.Add(ReadFrac(el, d));
@@ -101,12 +101,5 @@ internal static partial class OmmlReader
                     break;
             }
         }
-    }
-
-    private static Run? ReadRun(XElement r)
-    {
-        // m:rPr (sty/scr/nor) is read by the style slice; everything else in m:r except m:t is ignored.
-        var text = string.Concat(r.Elements(M + "t").Select(t => t.Value));
-        return text.Length == 0 ? null : new Run(text, new RunStyle());
     }
 }

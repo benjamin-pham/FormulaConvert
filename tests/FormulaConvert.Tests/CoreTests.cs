@@ -60,7 +60,7 @@ public class CoreTests
             </m:oMathPara>
             """;
         var result = FormulaConverter.OmmlToLatex(xml);
-        Assert.Equal("x", result.Output);
+        Assert.Equal("\\mathrm{x}", result.Output);
         Assert.Empty(result.Diagnostics);
     }
 

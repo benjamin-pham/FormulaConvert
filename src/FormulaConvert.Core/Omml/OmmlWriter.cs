@@ -87,24 +87,4 @@ internal static partial class OmmlWriter
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };
-
-    private static XElement WriteRun(string text, RunStyle style)
-    {
-        var r = new XElement(M + "r");
-        var rPr = WriteRunProperties(style);
-        if (rPr != null) r.Add(rPr);
-        var t = new XElement(M + "t", text);
-        if (text.Length > 0 && (char.IsWhiteSpace(text[0]) || char.IsWhiteSpace(text[^1])))
-            t.Add(new XAttribute(XNamespace.Xml + "space", "preserve"));
-        r.Add(t);
-        return r;
-    }
-
-    /// <summary><c>m:rPr</c> for a style, or null for the default style. Non-default styles are added by the style slice.</summary>
-    private static XElement? WriteRunProperties(RunStyle style) =>
-        style == new RunStyle()
-            ? null
-            : style == new RunStyle(Sty.Plain)
-                ? new XElement(M + "rPr", new XElement(M + "sty", new XAttribute(M + "val", "p")))
-                : throw new NotSupportedException($"OmmlWriter does not support run style {style}.");
 }

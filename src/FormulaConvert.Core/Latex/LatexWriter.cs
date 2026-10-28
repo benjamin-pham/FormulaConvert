@@ -25,10 +25,10 @@ internal static partial class LatexWriter
         switch (node)
         {
             case FormulaRow row:
-                foreach (var item in row.Items) WriteNode(item, b);
+                WriteItems(Flatten(row), b);
                 break;
             case Run run:
-                WriteRun(run, b);
+                WriteStyledRuns([run], b);
                 break;
             case Frac f:
                 WriteFrac(f, b);
@@ -89,13 +89,6 @@ internal static partial class LatexWriter
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");
         }
         b.Nesting.Exit();
-    }
-
-    private static void WriteRun(Run run, LatexBuilder b)
-    {
-        // Styles (\mathrm, \mathbf, …) are added by the style slice.
-        foreach (var rune in run.Text.EnumerateRunes())
-            WriteChar(rune, b);
     }
 
     /// <summary>One character: printable ASCII literally (with escapes), others via the canonical symbol command.</summary>

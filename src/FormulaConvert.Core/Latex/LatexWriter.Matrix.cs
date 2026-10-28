@@ -48,7 +48,7 @@ internal static partial class LatexWriter
                 for (int k = 0; k < pieces.Length; k++)
                 {
                     if (k > 0) b.Text("&");
-                    if (pieces[k].Length > 0) WriteRun(run with { Text = pieces[k] }, b);
+                    if (pieces[k].Length > 0) WriteStyledRuns([run with { Text = pieces[k] }], b);
                 }
             }
         }
