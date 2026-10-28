@@ -153,4 +153,13 @@ public class ScriptTests
         var sup = string.Concat(Enumerable.Repeat("x^{", 5000)) + "y" + new string('}', 5000);
         Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(sup));
     }
+
+    [Fact] public void Empty_base_script_after_sibling_keeps_its_empty_base() =>
+        Check("a{{}}^2 b", R("a") + SSup("", R("2")) + R("b"));
+    [Fact] public void Empty_base_script_last_in_row_after_sibling() =>
+        Check("a{}^2", R("a") + SSup("", R("2")));
+    [Fact] public void Empty_base_script_first_in_row_stays_bare() =>
+        Check("^2 b", SSup("", R("2")) + R("b"), "^2 b");
+    [Fact] public void Double_empty_group_is_not_a_prefix_script_marker() =>
+        Check("{{}}^2 b", SSup("", R("2")) + R("b"), "^2 b");
 }

@@ -12,7 +12,7 @@ internal static partial class LatexWriter
         {
             if (items[i] is not Run first)
             {
-                WriteNode(items[i], b);
+                WriteNonRun(items, i, b);
                 continue;
             }
             int end = i + 1;
@@ -20,6 +20,30 @@ internal static partial class LatexWriter
             WriteStyledRuns(items.GetRange(i, end - i).Cast<Run>().ToList(), b);
             i = end - 1;
         }
+    }
+
+    /// <summary>
+    /// A non-run item. An empty base or operand is written explicitly when it would otherwise read back as attached to
+    /// a sibling: <c>a{{}}^2 b</c> (<c>{}^2 b</c> would be a prefix script), <c>\sin{}x</c>, <c>\sum_a{}x</c>.
+    /// </summary>
+    private static void WriteNonRun(List<FormulaNode> items, int i, LatexBuilder b)
+    {
+        var item = items[i];
+        bool last = i == items.Count - 1;
+        if (item is Script s && i > 0 && Flatten(s.Base).Count == 0)
+        {
+            b.Text(last ? "{}" : "{{}}");
+            WriteScripts(s.Sub, s.Sup, b);
+            return;
+        }
+        WriteNode(item, b);
+        bool emptyOperand = item switch
+        {
+            Nary n => Flatten(n.Body).Count == 0,
+            FunctionApply f => Flatten(f.Arg).Count == 0,
+            _ => false,
+        };
+        if (emptyOperand && !last) b.Text("{}");
     }
 
     /// <summary>Runs of one style: bare for the default style, <c>\text{…}</c> for normal text, else Sty command outside Scr command.</summary>

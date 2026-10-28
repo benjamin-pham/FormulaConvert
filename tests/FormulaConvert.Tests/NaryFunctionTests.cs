@@ -132,4 +132,13 @@ public class NaryFunctionTests
         var omml = OMath(N("∑", null, null, R("ab")));
         Assert.Equal("\\sum{ab}", FormulaConverter.OmmlToLatex(omml).Output);
     }
+
+    [Fact] public void Empty_function_operand_before_sibling() =>
+        Check("\\sin{}x", Fn(FName("sin"), "") + R("x"));
+    [Fact] public void Empty_function_operand_at_end_stays_bare() =>
+        Check("\\sin", Fn(FName("sin"), ""));
+    [Fact] public void Empty_nary_operand_before_sibling() =>
+        Check("\\sum_a{}x", N("∑", R("a"), null, "") + R("x"));
+    [Fact] public void Empty_nary_operand_at_end_stays_bare() =>
+        Check("\\sum_a", N("∑", R("a"), null, ""));
 }

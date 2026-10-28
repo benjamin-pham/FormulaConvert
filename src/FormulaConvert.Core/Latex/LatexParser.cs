@@ -139,8 +139,8 @@ internal sealed partial class LatexParser
             }
             else
             {
+                emptyGroup = IsBareEmptyGroup();
                 atom = ParseAtom();
-                emptyGroup = t.Kind == TokenKind.BeginGroup && atom is FormulaRow { Items.Count: 0 };
             }
             items.Add(ParsePostfix(atom, emptyGroup));
         }
@@ -180,12 +180,15 @@ internal sealed partial class LatexParser
         var result = ScriptParsing.Attach(this, atom);
         if (!emptyGroup || result is not Script s || !StartsAtom(Peek())) return result;
         EnterNesting();
-        var next = Peek();
+        var nextIsEmptyGroup = IsBareEmptyGroup();
         var nextAtom = ParseAtom();
-        var body = ParsePostfix(nextAtom, next.Kind == TokenKind.BeginGroup && nextAtom is FormulaRow { Items.Count: 0 });
+        var body = ParsePostfix(nextAtom, nextIsEmptyGroup);
         ExitNesting();
         return new PreScript(body, s.Sub, s.Sup);
     }
+
+    /// <summary>True at a literal <c>{}</c> (not <c>{{}}</c>, which is an empty base for the scripts that follow).</summary>
+    private bool IsBareEmptyGroup() => Peek().Kind == TokenKind.BeginGroup && Peek(1).Kind == TokenKind.EndGroup;
 
     /// <summary>True when the token begins an ordinary atom (not a row terminator, infix command or script mark).</summary>
     private bool StartsAtom(Token t) =>
