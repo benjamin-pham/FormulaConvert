@@ -94,3 +94,6 @@
 \!,0,-1
 \ ,0,-1
 \hspace,1,-1
+\not,0,-1
+\csname,0,-1
+\endcsname,0,-1
