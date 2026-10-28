@@ -181,14 +181,14 @@ public class CoreTests
     public void Deep_latex_nesting_throws()
     {
         var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(new string('{', 100000)));
-        Assert.Equal(1000, ex.Position);
+        Assert.Equal(NestingGuard.LatexLimit, ex.Position);
         Assert.Contains("nesting too deep", ex.Message);
     }
 
     [Fact]
     public void Nesting_up_to_limit_is_accepted()
     {
-        var latex = new string('{', 1000) + "a" + new string('}', 1000);
+        var latex = new string('{', NestingGuard.LatexLimit) + "a" + new string('}', NestingGuard.LatexLimit);
         Assert.Equal(OMath(R("a")), FormulaConverter.LatexToOmml(latex).Output);
         Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("{" + latex + "}"));
     }

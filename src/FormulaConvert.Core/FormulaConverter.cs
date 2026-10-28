@@ -61,7 +61,7 @@ public static class FormulaConverter
         using var reader = CreateReader(xml);
         while (reader.Read())
         {
-            if (reader.NodeType == XmlNodeType.Element && reader.Depth > NestingGuard.Limit)
+            if (reader.NodeType == XmlNodeType.Element && reader.Depth > NestingGuard.XmlLimit)
                 throw NestingGuard.TooDeep(-1);
         }
     }

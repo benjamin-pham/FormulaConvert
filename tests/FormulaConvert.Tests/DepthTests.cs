@@ -31,12 +31,12 @@ public class DepthTests
     }
 
     [Fact]
-    public void Depth_1000_is_accepted() => FormulaConverter.OmmlToLatex(Nested(1000));
+    public void Depth_at_limit_is_accepted() => FormulaConverter.OmmlToLatex(Nested(NestingGuard.XmlLimit));
 
     [Fact]
-    public void Depth_1001_is_rejected()
+    public void Depth_above_limit_is_rejected()
     {
-        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.OmmlToLatex(Nested(1001)));
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.OmmlToLatex(Nested(NestingGuard.XmlLimit + 1)));
         Assert.Equal(-1, ex.Position);
     }
 }

@@ -131,7 +131,7 @@ internal sealed class LatexBuilder
     private Pending _pending;
 
     /// <summary>Depth guard for <see cref="LatexWriter.WriteNode"/> recursion.</summary>
-    public NestingGuard Nesting { get; } = new();
+    public NestingGuard Nesting { get; } = new(NestingGuard.XmlLimit);
 
     /// <summary>Appends a control sequence such as <c>\alpha</c> or <c>\{</c>.</summary>
     public LatexBuilder Command(string command)

@@ -37,6 +37,7 @@ internal static partial class OmmlWriter
     /// <summary>Appends the content of a node to <paramref name="parent"/>: rows are flattened and adjacent runs of the same style merged.</summary>
     internal static void WriteContent(XElement parent, FormulaNode node)
     {
+        NestingGuard.EnsureStack(-1);
         var items = new List<FormulaNode>();
         Flatten(node, items);
         for (int i = 0; i < items.Count; i++)

@@ -32,6 +32,7 @@ internal static partial class OmmlReader
 
     private static void ReadInto(XElement container, List<FormulaNode> items, List<Diagnostic> d)
     {
+        NestingGuard.EnsureStack(-1);
         foreach (var el in container.Elements())
         {
             if (el.Name.Namespace != M) continue;
