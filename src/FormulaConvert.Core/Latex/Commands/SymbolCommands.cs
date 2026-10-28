@@ -3,13 +3,14 @@ using FormulaConvert.Ast;
 
 namespace FormulaConvert.Latex.Commands;
 
-/// <summary>Character-producing commands: escapes (<c>\# \$ \% \&amp; \_ \{ \}</c>), <c>\unicode</c>, <c>\char</c>.</summary>
+/// <summary>Character-producing commands: escapes (<c>\# \$ \% \&amp; \_ \{ \}</c>), <c>\|</c>, <c>\unicode</c>, <c>\char</c>.</summary>
 internal static class SymbolCommands
 {
     public static void Register(CommandTable t)
     {
         foreach (var c in "#$%&_{}")
             t.Add("\\" + c, (p, name) => LatexParser.CharRun(name[1..]));
+        t.Add("\\|", (p, name) => LatexParser.CharRun("\u2016"));
         t.Add("\\unicode", Unicode);
         t.Add("\\char", Char);
     }

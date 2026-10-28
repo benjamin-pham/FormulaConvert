@@ -23,6 +23,9 @@ public class CoreTests
     public void Char_and_caret_forms(string latex, string text) => Check(latex, R(text), text);
 
     [Fact] public void Escaped_specials() => Check("\\#\\$\\%\\&\\_\\{\\}", R("#$%&_{}"), "\\#\\$\\%\\&\\_\\{\\}");
+    // U+2016 has no entry in the symbol table, so the canonical output is the character itself.
+    [Fact] public void Double_bar_command() => Check("a\\|b", R("a\u2016b"), "a\u2016b");
+    [Fact] public void Double_bar_alone() => Check("\\|", R("\u2016"), "\u2016");
     [Fact] public void Backslash_symbol() => Check("\\backslash", R("\\"));
     [Fact] public void Non_bmp_passthrough() => Check("𝐀+é中", R("𝐀+é中"));
 
