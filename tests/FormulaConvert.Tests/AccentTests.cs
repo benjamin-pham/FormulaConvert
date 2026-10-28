@@ -84,7 +84,11 @@ public class AccentTests
         Check("\\xrightarrow[b]{a}", LU(LL(R("→"), R("b")), R("a")));
     [Fact] public void Xleftarrow_empty_above_is_dropped() =>
         Check("\\xleftarrow[b]{}", LL(R("←"), R("b")));
-    [Fact] public void Xlongequal() => Check("\\xlongequal{a}", LU(R("="), R("a")));
+    [Fact] public void Xlongequal() => Check("\\xlongequal{a}", LU(R("="), R("a")), "\\overset{a}{=}");
+    [Fact] public void Overset_equals_round_trips() => Check("\\overset{a}{=}", LU(R("="), R("a")));
+    [Fact] public void Stackrel_equals_is_overset() => Check("\\stackrel{a}{=}", LU(R("="), R("a")), "\\overset{a}{=}");
+    [Fact] public void Overset_def_equals_round_trips() =>
+        Check("\\overset{\\text{def}}{=}", LU(R("=") , "<m:r><m:rPr><m:nor/></m:rPr><m:t>def</m:t></m:r>"));
     [Fact] public void XRightarrow() => Check("\\xRightarrow{a}", LU(R("⇒"), R("a")));
     [Fact] public void Xmapsto() => Check("\\xmapsto{a}", LU(R("↦"), R("a")));
     [Fact] public void Xtofrom() => Check("\\xtofrom{a}", LU(R("⇄"), R("a")));

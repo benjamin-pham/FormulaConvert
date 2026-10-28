@@ -61,7 +61,8 @@ internal static partial class LatexWriter
             below = l.Lim;
         }
 
-        if (Flatten(core) is [Run { Text: var chr }] && OverUnderCommands.TryGetArrowCommand(chr, out var arrow)
+        // "=" stays \overset{a}{=}: \xlongequal would change its look on a round trip
+        if (Flatten(core) is [Run { Text: var chr }] && chr != "=" && OverUnderCommands.TryGetArrowCommand(chr, out var arrow)
             && (above != null && !IsEmpty(above) || below != null && !IsEmpty(below)))
         {
             b.Command(arrow);
