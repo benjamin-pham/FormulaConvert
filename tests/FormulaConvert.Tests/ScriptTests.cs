@@ -50,6 +50,10 @@ public class ScriptTests
         Assert.Equal("f^{\\prime\\prime}", FormulaConverter.OmmlToLatex(OMath(SSup(R("f"), R("″")))).Output);
 
     [Fact] public void Prefix_script() => Check("{}_a^b x", SPre(R("a"), R("b"), R("x")));
+    [Fact] public void Prefix_script_does_not_swallow_nonempty_group_script() =>
+        Check("{}_a{xy}^2z", SPre(R("a"), "", SSup(R("xy"), R("2"))) + R("z"), "{}_a{xy}^2 z");
+    [Fact] public void Prefix_script_whitespace_in_empty_group() => Check("{ }_a x", SPre(R("a"), "", R("x")), "{}_a x");
+    [Fact] public void Prefix_script_sup_only() => Check("{}^b x", SPre("", R("b"), R("x")), "{}^b x");
     [Fact] public void Prefix_script_group() => Check("{}_a^b{xy}", SPre(R("a"), R("b"), R("xy")));
     [Fact] public void Prefix_script_sub_only() => Check("{}_a x", SPre(R("a"), "", R("x")), "{}_a x");
     [Fact] public void Empty_group_alone_is_empty() => Check("{}x", R("x"), "x");
@@ -90,6 +94,19 @@ public class ScriptTests
     [InlineData("x^2'", "double superscript", 3)]
     [InlineData("x^2_1^3", "double superscript", 5)]
     public void Double_script_throws(string latex, string message, int position)
+    {
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
+        Assert.Contains(message, ex.Message);
+        Assert.Equal(position, ex.Position);
+    }
+
+    [Theory]
+    [InlineData("a^", "missing argument for ^", 1)]
+    [InlineData("a_", "missing argument for _", 1)]
+    [InlineData("{a^}", "missing argument for ^", 2)]
+    [InlineData("x^{\\sqrt}", "missing argument", 8)]
+    [InlineData("\\sqrt", "missing argument", 5)]
+    public void Missing_argument_position(string latex, string message, int position)
     {
         var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
         Assert.Contains(message, ex.Message);

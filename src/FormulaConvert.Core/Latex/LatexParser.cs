@@ -146,7 +146,8 @@ internal sealed partial class LatexParser
         if (!emptyGroup || result is not Script s || !StartsAtom(Peek())) return result;
         EnterNesting();
         var next = Peek();
-        var body = ParsePostfix(ParseAtom(), next.Kind == TokenKind.BeginGroup);
+        var nextAtom = ParseAtom();
+        var body = ParsePostfix(nextAtom, next.Kind == TokenKind.BeginGroup && nextAtom is FormulaRow { Items.Count: 0 });
         ExitNesting();
         return new PreScript(body, s.Sub, s.Sup);
     }
@@ -156,6 +157,9 @@ internal sealed partial class LatexParser
         !IsRowTerminator(t)
         && t.Kind is TokenKind.Char or TokenKind.BeginGroup or TokenKind.LBracket or TokenKind.RBracket or TokenKind.Command
         && !(t.Kind == TokenKind.Command && _commands.TryGetInfix(t.Text, out _));
+
+    /// <summary>True when a required argument can start here (the next token does not end the row).</summary>
+    public bool HasArgument => !IsRowTerminator(Peek());
 
     /// <summary>A required argument: a <c>{…}</c> group or a single atom.</summary>
     public FormulaNode ReadArgument()

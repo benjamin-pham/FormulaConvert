@@ -9,14 +9,9 @@ internal static class ScriptParsing
 
     private static FormulaNode ReadScriptArgument(LatexParser p, Token mark)
     {
-        try
-        {
-            return p.ReadArgument();
-        }
-        catch (FormulaParseException ex) when (ex.Message == "missing argument")
-        {
+        if (!p.HasArgument)
             throw p.Error($"missing argument for {mark.Text}", mark.Position);
-        }
+        return p.ReadArgument();
     }
 
     /// <summary>
