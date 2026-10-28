@@ -70,6 +70,9 @@ internal static partial class OmmlWriter
     {
         Frac f => WriteFrac(f),
         Delimited { Parts: [Frac { Kind: FracKind.NoBar }] } d when d is { Open: "(", Close: ")" } => WriteBinomial(d),
+        Script s => WriteScript(s),
+        PreScript s => WritePreScript(s),
+        Radical r => WriteRadical(r),
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };

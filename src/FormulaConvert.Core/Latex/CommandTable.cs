@@ -26,6 +26,7 @@ internal sealed class CommandTable
         var table = new CommandTable();
         SymbolCommands.Register(table);
         FractionCommands.Register(table);
+        RadicalCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

@@ -48,6 +48,21 @@ internal static partial class OmmlReader
                 case "d" when IsBinomial(el):
                     items.Add(ReadBinomial(el, d));
                     break;
+                case "sSub":
+                    items.Add(ReadSubSup(el, true, false, d));
+                    break;
+                case "sSup":
+                    items.Add(ReadSubSup(el, false, true, d));
+                    break;
+                case "sSubSup":
+                    items.Add(ReadSubSup(el, true, true, d));
+                    break;
+                case "sPre":
+                    items.Add(ReadPreScript(el, d));
+                    break;
+                case "rad":
+                    items.Add(ReadRadical(el, d));
+                    break;
                 // Feature slices add cases here, e.g. `case "f": items.Add(ReadFrac(el, d)); break;`
                 default:
                     d.Add(new Diagnostic("unsupported-omml", $"unsupported OMML element m:{el.Name.LocalName}; reading its content", -1));

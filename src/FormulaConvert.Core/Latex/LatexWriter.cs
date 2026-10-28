@@ -36,6 +36,15 @@ internal static partial class LatexWriter
             case Delimited d when IsBinomial(d):
                 WriteBinomial(d, b);
                 break;
+            case Script s:
+                WriteScript(s, b);
+                break;
+            case PreScript s:
+                WritePreScript(s, b);
+                break;
+            case Radical r:
+                WriteRadical(r, b);
+                break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");
@@ -58,6 +67,7 @@ internal static partial class LatexWriter
         {
             char c = (char)cp;
             if (c == '\\') b.Command("\\backslash");
+            else if (c is '^' or '~' or '\'') b.HexChar(cp);
             else if (EscapedChars.Contains(c)) b.Command("\\" + c);
             else b.Text(c.ToString());
         }
@@ -79,7 +89,7 @@ internal static partial class LatexWriter
 /// </summary>
 internal sealed class LatexBuilder
 {
-    private enum Pending { None, Letter, LetterOrDigit }
+    private enum Pending { None, Letter, LetterOrDigit, HexDigit }
 
     private readonly StringBuilder _sb = new();
     private Pending _pending;
@@ -93,6 +103,13 @@ internal sealed class LatexBuilder
         Emit(command);
         _pending = command.Length > 1 && LatexTokenizer.IsAsciiLetter(command[^1]) ? Pending.Letter : Pending.None;
         return this;
+    }
+
+    /// <summary>Appends <c>\char"HH</c>; a following hexadecimal digit is separated by a space so it is not absorbed.</summary>
+    public void HexChar(int codePoint)
+    {
+        Emit("\\char\"" + codePoint.ToString("X2"));
+        _pending = Pending.HexDigit;
     }
 
     /// <summary>Appends literal text (characters, braces, operators).</summary>
@@ -113,6 +130,7 @@ internal sealed class LatexBuilder
         bool space = _pending switch
         {
             Pending.Letter => LatexTokenizer.IsAsciiLetter(first),
+            Pending.HexDigit => char.IsAsciiHexDigit(first),
             Pending.LetterOrDigit => LatexTokenizer.IsAsciiLetter(first) || char.IsAsciiDigit(first),
             _ => false,
         };

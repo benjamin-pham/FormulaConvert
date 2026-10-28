@@ -59,6 +59,7 @@ public class SymbolSweepTests
 
     private static string Expected(int cp, string ch)
     {
+        if (cp is '^' or '~' or '\'') return $"\\char\"{cp:X2}"; // literal script marks round-trip via \char
         if (cp < 0x80)
             return ch == "\\" ? "\\backslash" : "#$%&_{}".Contains(ch) ? "\\" + ch : ch;
         return SymbolTable.TryGetCommand(cp, out var cmd) ? cmd : ch;

@@ -112,7 +112,18 @@ internal sealed partial class LatexParser
                 items = [result];
                 continue;
             }
-            items.Add(ParsePostfix(ParseAtom()));
+            FormulaNode atom;
+            bool emptyGroup = false;
+            if (t.Kind is TokenKind.Superscript or TokenKind.Subscript or TokenKind.Prime)
+            {
+                atom = FormulaRow.Empty; // scripts without a base
+            }
+            else
+            {
+                atom = ParseAtom();
+                emptyGroup = t.Kind == TokenKind.BeginGroup && atom is FormulaRow { Items.Count: 0 };
+            }
+            items.Add(ParsePostfix(atom, emptyGroup));
         }
         return Rowify(items);
     }
@@ -125,8 +136,26 @@ internal sealed partial class LatexParser
         _ => false,
     };
 
-    /// <summary>Scripts and primes attached after an atom (none yet).</summary>
-    private FormulaNode ParsePostfix(FormulaNode atom) => atom;
+    /// <summary>
+    /// Scripts and primes attached after an atom. An explicit <c>{}</c> carrying scripts and followed by another
+    /// atom is a prefix script (<c>{}_a^b x</c>) on that atom.
+    /// </summary>
+    private FormulaNode ParsePostfix(FormulaNode atom, bool emptyGroup = false)
+    {
+        var result = ScriptParsing.Attach(this, atom);
+        if (!emptyGroup || result is not Script s || !StartsAtom(Peek())) return result;
+        EnterNesting();
+        var next = Peek();
+        var body = ParsePostfix(ParseAtom(), next.Kind == TokenKind.BeginGroup);
+        ExitNesting();
+        return new PreScript(body, s.Sub, s.Sup);
+    }
+
+    /// <summary>True when the token begins an ordinary atom (not a row terminator, infix command or script mark).</summary>
+    private bool StartsAtom(Token t) =>
+        !IsRowTerminator(t)
+        && t.Kind is TokenKind.Char or TokenKind.BeginGroup or TokenKind.LBracket or TokenKind.RBracket or TokenKind.Command
+        && !(t.Kind == TokenKind.Command && _commands.TryGetInfix(t.Text, out _));
 
     /// <summary>A required argument: a <c>{…}</c> group or a single atom.</summary>
     public FormulaNode ReadArgument()
