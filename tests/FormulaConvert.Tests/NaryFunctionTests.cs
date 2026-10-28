@@ -141,4 +141,11 @@ public class NaryFunctionTests
         Check("\\sum_a{}x", N("∑", R("a"), null, "") + R("x"));
     [Fact] public void Empty_nary_operand_at_end_stays_bare() =>
         Check("\\sum_a", N("∑", R("a"), null, ""));
+
+    [Fact] public void Starred_operatorname_is_accepted() =>
+        Check("\\operatorname*{argmax}_x f", Fn(SSub(FName("argmax"), R("x")), R("f")), "\\argmax_x f"); // argmax is a known function: canonical is the command
+    [Fact] public void Starred_operatorname_unknown_name_writes_unstarred() =>
+        Check("\\operatorname*{foo}_x f", Fn(SSub(FName("foo"), R("x")), R("f")), "\\operatorname{foo}_x f");
+    [Fact] public void Starred_operatorname_has_no_diagnostic() =>
+        Assert.Empty(FormulaConverter.LatexToOmml("\\operatorname*{argmax}_x f").Diagnostics);
 }
