@@ -76,6 +76,61 @@ public class CoreTests
         Assert.Equal("unsupported-omml", d.Code);
     }
 
+    private const string W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+
+    /// <summary>An m:oMath that also declares the w namespace.</summary>
+    private static string WOMath(string inner) =>
+        $"<m:oMath xmlns:m=\"{MathNamespace}\" xmlns:w=\"{W}\">{inner}</m:oMath>";
+
+    [Theory]
+    [InlineData("<w:ins w:id=\"1\" w:author=\"A\">{0}</w:ins>")]
+    [InlineData("<w:moveTo w:id=\"1\" w:author=\"A\">{0}</w:moveTo>")]
+    [InlineData("<w:smartTag w:element=\"x\">{0}</w:smartTag>")]
+    [InlineData("<w:customXml w:element=\"x\"><w:customXmlPr/>{0}</w:customXml>")]
+    [InlineData("<w:sdt><w:sdtPr><w:alias w:val=\"x\"/></w:sdtPr><w:sdtContent>{0}</w:sdtContent></w:sdt>")]
+    [InlineData("<w:ins w:id=\"1\" w:author=\"A\"><w:smartTag w:element=\"x\">{0}</w:smartTag></w:ins>")]
+    public void Word_wrappers_are_transparent(string wrapper)
+    {
+        var result = FormulaConverter.OmmlToLatex(WOMath(R("a+") + string.Format(wrapper, R("b"))));
+        Assert.Equal("a+b", result.Output);
+        Assert.Empty(result.Diagnostics);
+    }
+
+    [Theory]
+    [InlineData("<w:del w:id=\"1\" w:author=\"A\">{0}</w:del>")]
+    [InlineData("<w:moveFrom w:id=\"1\" w:author=\"A\">{0}</w:moveFrom>")]
+    public void Deleted_content_is_skipped(string wrapper)
+    {
+        var result = FormulaConverter.OmmlToLatex(WOMath(R("a+") + string.Format(wrapper, R("b"))));
+        Assert.Equal("a+", result.Output);
+        Assert.Empty(result.Diagnostics);
+    }
+
+    [Fact]
+    public void Tracked_insert_inside_structure()
+    {
+        var xml = WOMath($"<m:f><m:num><w:ins w:id=\"1\" w:author=\"A\">{R("x")}</w:ins></m:num><m:den>{R("y")}</m:den></m:f>");
+        Assert.Equal("\\frac{x}{y}", FormulaConverter.OmmlToLatex(xml).Output);
+    }
+
+    [Fact]
+    public void Unknown_foreign_wrapper_with_math_warns()
+    {
+        var result = FormulaConverter.OmmlToLatex(WOMath(R("a") + $"<x:wrap xmlns:x=\"urn:x\">{R("b")}</x:wrap>"));
+        Assert.Equal("a", result.Output);
+        var d = Assert.Single(result.Diagnostics);
+        Assert.Equal("unsupported-omml", d.Code);
+        Assert.Contains("wrap", d.Message);
+    }
+
+    [Fact]
+    public void Foreign_element_without_math_is_ignored_silently()
+    {
+        var result = FormulaConverter.OmmlToLatex(WOMath(R("a") + "<w:bookmarkStart w:id=\"0\" w:name=\"x\"/><w:proofErr w:type=\"spellStart\"/>"));
+        Assert.Equal("a", result.Output);
+        Assert.Empty(result.Diagnostics);
+    }
+
     [Fact]
     public void Multiple_omath_joined_by_newline()
     {

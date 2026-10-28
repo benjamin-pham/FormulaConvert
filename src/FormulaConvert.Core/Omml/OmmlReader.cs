@@ -5,7 +5,8 @@ using FormulaConvert.Latex;
 namespace FormulaConvert.Omml;
 
 /// <summary>
-/// Reads OMML into the AST, ignoring Word noise (<c>m:ctrlPr</c>, non-<c>m</c> elements, whitespace text).
+/// Reads OMML into the AST, ignoring Word noise (<c>m:ctrlPr</c>, non-<c>m</c> elements, whitespace text) but reading
+/// through Word wrappers such as tracked insertions (see <see cref="ReadForeign"/>).
 /// Element kinds are dispatched in <see cref="ReadInto"/>; feature slices add a case there and implement it in
 /// <c>OmmlReader.&lt;Group&gt;.cs</c>. Unknown <c>m:</c> elements produce an <c>unsupported-omml</c> warning and
 /// their children are read in place.
@@ -13,6 +14,13 @@ namespace FormulaConvert.Omml;
 internal static partial class OmmlReader
 {
     private static readonly XNamespace M = OmmlNames.M;
+    private static readonly XNamespace W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+
+    /// <summary>WordprocessingML wrappers whose math content is current: tracked insertions, smart tags, content controls.</summary>
+    private static readonly HashSet<string> TransparentW = ["ins", "moveTo", "smartTag", "customXml", "sdt", "sdtContent"];
+
+    /// <summary>WordprocessingML wrappers whose content is deleted (tracked deletions and move sources).</summary>
+    private static readonly HashSet<string> DeletedW = ["del", "moveFrom"];
 
     /// <summary>Reads the content of an <c>m:oMath</c> element.</summary>
     public static FormulaNode Read(XElement root, List<Diagnostic> d)
@@ -30,12 +38,32 @@ internal static partial class OmmlReader
         return LatexParser.Rowify(items);
     }
 
+    /// <summary>
+    /// A non-<c>m</c> element among math content: Word wrappers are read through (<see cref="TransparentW"/>) or
+    /// skipped (<see cref="DeletedW"/>); any other element is skipped, with a warning when it holds math.
+    /// </summary>
+    private static void ReadForeign(XElement el, List<FormulaNode> items, List<Diagnostic> d)
+    {
+        if (el.Name.Namespace == W && TransparentW.Contains(el.Name.LocalName))
+        {
+            ReadInto(el, items, d);
+            return;
+        }
+        if (el.Name.Namespace == W && DeletedW.Contains(el.Name.LocalName)) return;
+        if (el.Descendants().Any(e => e.Name.Namespace == M))
+            d.Add(new Diagnostic("unsupported-omml", $"unsupported element {el.Name.LocalName} ({el.Name.NamespaceName}) containing math; its content is dropped", -1));
+    }
+
     private static void ReadInto(XElement container, List<FormulaNode> items, List<Diagnostic> d)
     {
         NestingGuard.EnsureStack(-1);
         foreach (var el in container.Elements())
         {
-            if (el.Name.Namespace != M) continue;
+            if (el.Name.Namespace != M)
+            {
+                ReadForeign(el, items, d);
+                continue;
+            }
             switch (el.Name.LocalName)
             {
                 case "ctrlPr":
