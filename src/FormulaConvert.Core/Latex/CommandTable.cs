@@ -30,6 +30,7 @@ internal sealed class CommandTable
         NaryCommands.Register(table);
         FunctionCommands.Register(table);
         DelimiterCommands.Register(table);
+        EnvironmentCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

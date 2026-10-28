@@ -77,6 +77,8 @@ internal static partial class OmmlWriter
         Nary n => WriteNary(n),
         FunctionApply f => WriteFunctionApply(f),
         Limit l => WriteLimit(l),
+        Matrix m => WriteMatrix(m),
+        EqArray e => WriteEqArray(e),
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };

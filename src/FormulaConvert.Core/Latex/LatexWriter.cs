@@ -36,6 +36,12 @@ internal static partial class LatexWriter
             case Delimited d when d.IsBinomial(out var top, out var bottom):
                 WriteBinomial(top, bottom, b);
                 break;
+            case Delimited d when d.IsMatrixEnvironment(out var envName, out var envMatrix):
+                WriteMatrix(envName, envMatrix, b);
+                break;
+            case Delimited d when d.IsCases(out var casesName, out var casesRows):
+                WriteEquations(casesName, casesRows, b);
+                break;
             case Delimited d:
                 WriteDelimited(d, b);
                 break;
@@ -53,6 +59,12 @@ internal static partial class LatexWriter
                 break;
             case FunctionApply f:
                 WriteFunctionApply(f, b);
+                break;
+            case Matrix m:
+                WriteMatrix(m.ColumnAlign == null ? "matrix" : "array", m, b);
+                break;
+            case EqArray e:
+                WriteEquations(HasAlignmentMark(e) ? "align" : "gathered", e, b);
                 break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:

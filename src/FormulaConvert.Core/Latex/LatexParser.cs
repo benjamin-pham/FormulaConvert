@@ -19,6 +19,12 @@ internal enum RowContext
     Optional,
     /// <summary>Inside <c>\left … \right</c> (ended by <c>\middle</c> or <c>\right</c>).</summary>
     Left,
+    /// <summary>A matrix/array cell: ended by <c>&amp;</c>, <c>\\</c> or <c>\end</c>.</summary>
+    Cell,
+    /// <summary>A line of an align/cases/gather body: ended by <c>\\</c> or <c>\end</c>; <c>&amp;</c> stays a literal.</summary>
+    Line,
+    /// <summary>The body of a transparent environment (<c>equation</c>…): ended by <c>\end</c>.</summary>
+    Body,
 }
 
 internal sealed partial class LatexParser
@@ -143,7 +149,7 @@ internal sealed partial class LatexParser
 
     /// <summary>
     /// Tokens that end a row: <c>}</c> and end of input always; <c>]</c> in an <see cref="RowContext.Optional"/> row;
-    /// <c>\right</c> and <c>\middle</c> in a <see cref="RowContext.Left"/> row. Later contexts add <c>\end</c>, <c>&amp;</c>, <c>\\</c>.
+    /// <c>\right</c> and <c>\middle</c> in a <see cref="RowContext.Left"/> row. <c>\end</c>, <c>&amp;</c> and <c>\\</c> in environment rows.
     /// </summary>
     private bool IsRowTerminator(Token t)
     {
@@ -152,7 +158,10 @@ internal sealed partial class LatexParser
         {
             TokenKind.EndOfInput or TokenKind.EndGroup => true,
             TokenKind.RBracket => context == RowContext.Optional,
-            TokenKind.Command => context == RowContext.Left && t.Text is "\\right" or "\\middle",
+            TokenKind.Ampersand => context == RowContext.Cell,
+            TokenKind.NewLine => context is RowContext.Cell or RowContext.Line,
+            TokenKind.Command => (context == RowContext.Left && t.Text is "\\right" or "\\middle")
+                || (context is RowContext.Cell or RowContext.Line or RowContext.Body && t.Text == "\\end"),
             _ => false,
         };
     }
@@ -216,6 +225,23 @@ internal sealed partial class LatexParser
         return node;
     }
 
+    /// <summary>The raw source text between <c>[</c> and the next <c>]</c>, or null when the next token is not <c>[</c>.</summary>
+    public string? ReadRawOptional()
+    {
+        var open = Peek();
+        if (open.Kind != TokenKind.LBracket) return null;
+        for (int k = _index + 1; k < _tokens.Count; k++)
+        {
+            var t = _tokens[k];
+            if (t.Kind == TokenKind.RBracket)
+            {
+                _index = k + 1;
+                return _source[open.End..t.Position];
+            }
+        }
+        throw Error("unclosed [", open.Position);
+    }
+
     /// <summary>The raw source text between <c>{</c> and its matching <c>}</c> (whitespace and comments included).</summary>
     public string ReadRawGroup()
     {
@@ -265,6 +291,9 @@ internal sealed partial class LatexParser
                 return CharRun(t.Text);
             case TokenKind.Command:
                 return ParseCommand();
+            case TokenKind.Ampersand when _contexts.Count > 0 && _contexts.Peek() == RowContext.Line:
+                Next();
+                return CharRun("&");
             default:
                 throw Error($"unexpected {Describe(t)}");
         }
