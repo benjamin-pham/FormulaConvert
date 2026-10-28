@@ -31,6 +31,8 @@ internal sealed class CommandTable
         FunctionCommands.Register(table);
         DelimiterCommands.Register(table);
         EnvironmentCommands.Register(table);
+        AccentCommands.Register(table);
+        OverUnderCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

@@ -66,6 +66,18 @@ internal static partial class LatexWriter
             case EqArray e:
                 WriteEquations(HasAlignmentMark(e) ? "align" : "gathered", e, b);
                 break;
+            case Accent a:
+                WriteAccent(a, b);
+                break;
+            case Bar bar:
+                WriteBar(bar, b);
+                break;
+            case GroupChar g:
+                WriteGroupChar(g, b);
+                break;
+            case Limit l:
+                WriteLimit(l, b);
+                break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");

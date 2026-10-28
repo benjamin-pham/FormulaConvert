@@ -15,6 +15,9 @@ internal static class AccentTable
         return (byCommand, byChar);
     });
 
+    /// <summary>All accent commands in <c>accents.csv</c>.</summary>
+    public static IEnumerable<string> Commands => Data.Value.ByCommand.Keys;
+
     public static bool TryGetByCommand(string command, out string chr) =>
         Data.Value.ByCommand.TryGetValue(command, out chr!);
 

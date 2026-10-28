@@ -75,6 +75,19 @@ internal static partial class OmmlReader
                 case "eqArr":
                     items.Add(ReadEqArray(el, d));
                     break;
+                case "acc":
+                    items.Add(ReadAccent(el, d));
+                    break;
+                case "bar":
+                    items.Add(ReadBar(el, d));
+                    break;
+                case "groupChr":
+                    items.Add(ReadGroupChar(el, d));
+                    break;
+                case "limLow":
+                case "limUpp":
+                    items.Add(ReadLimit(el, d));
+                    break;
                 // Feature slices add cases here, e.g. `case "f": items.Add(ReadFrac(el, d)); break;`
                 default:
                     d.Add(new Diagnostic("unsupported-omml", $"unsupported OMML element m:{el.Name.LocalName}; reading its content", -1));
