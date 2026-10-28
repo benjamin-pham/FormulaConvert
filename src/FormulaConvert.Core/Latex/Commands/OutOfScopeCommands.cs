@@ -13,11 +13,15 @@ internal static class OutOfScopeCommands
     /// <summary>Commands that take a leading optional <c>[…]</c> argument.</summary>
     private static readonly HashSet<string> WithOptional = new(StringComparer.Ordinal) { "\\bbox", "\\rule", "\\raisebox" };
 
+    /// <summary>CSV rows another group owns (the stray forms are reported as out-of-scope by NaryCommands).</summary>
+    private static readonly HashSet<string> OwnedElsewhere = new(StringComparer.Ordinal) { "\\limits", "\\nolimits", "\\displaylimits" };
+
     public static void Register(CommandTable t)
     {
         foreach (var name in OutOfScopeTable.Names)
         {
-            if (t.Has(name)) continue; // another group already gives it a meaning
+            if (OwnedElsewhere.Contains(name)) continue;
+            if (t.Has(name)) throw new InvalidOperationException($"outofscope.csv row {name} is already registered by another group.");
             OutOfScopeTable.TryGet(name, out var rule);
             t.Add(name, (p, n) => Handle(p, n, rule.Arity, rule.KeptArg));
         }

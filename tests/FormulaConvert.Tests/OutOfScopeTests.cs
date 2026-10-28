@@ -112,11 +112,18 @@ public class OutOfScopeTests
     public void Each_spacing_command_warns_once() => Check("a\\quad b\\,c", R("abc"), 2);
 
     [Fact]
-    public void Relax_and_stray_limits_are_dropped()
+    public void Relax_is_dropped() => Check("\\relax", "");
+
+    [Theory]
+    [InlineData("\\limits", 0)]
+    [InlineData("a\\limits", 1)]
+    [InlineData("\\nolimits", 0)]
+    [InlineData("a\\nolimits", 1)]
+    [InlineData("a\\displaylimits", 1)]
+    public void Stray_limits_modifiers_are_out_of_scope(string latex, int position)
     {
-        Check("\\relax", "");
-        var r = FormulaConverter.LatexToOmml("x\\limits");
-        Assert.Single(r.Diagnostics);
+        var r = Check(latex, latex.StartsWith('a') ? R("a") : "");
+        Assert.Equal(position, r.Diagnostics[0].Position);
     }
 
     [Fact]

@@ -14,7 +14,7 @@ internal static class NaryCommands
         foreach (var name in new[] { "\\limits", "\\nolimits", "\\displaylimits" })
             t.Add(name, (p, n) =>
             {
-                p.Warn("lossy", $"{n} outside an operator has no effect");
+                p.Warn("out-of-scope", $"{n} is not supported by OMML", p.Peek(-1).Position);
                 return FormulaRow.Empty;
             });
     }
