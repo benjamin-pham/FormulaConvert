@@ -12,5 +12,8 @@ internal static class FunctionTable
         "\\injlim", "\\projlim", "\\varliminf", "\\varlimsup", "\\varinjlim", "\\varprojlim",
     };
 
+    /// <summary>All function commands (with backslash).</summary>
+    public static IEnumerable<string> All => Names.Value;
+
     public static bool Contains(string command) => Names.Value.Contains(command);
 }

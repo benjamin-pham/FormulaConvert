@@ -27,6 +27,8 @@ internal sealed class CommandTable
         SymbolCommands.Register(table);
         FractionCommands.Register(table);
         RadicalCommands.Register(table);
+        NaryCommands.Register(table);
+        FunctionCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

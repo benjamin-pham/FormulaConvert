@@ -73,6 +73,9 @@ internal static partial class OmmlWriter
         Script s => WriteScript(s),
         PreScript s => WritePreScript(s),
         Radical r => WriteRadical(r),
+        Nary n => WriteNary(n),
+        FunctionApply f => WriteFunctionApply(f),
+        Limit l => WriteLimit(l),
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };
@@ -93,5 +96,7 @@ internal static partial class OmmlWriter
     private static XElement? WriteRunProperties(RunStyle style) =>
         style == new RunStyle()
             ? null
-            : throw new NotSupportedException($"OmmlWriter does not support run style {style}.");
+            : style == new RunStyle(Sty.Plain)
+                ? new XElement(M + "rPr", new XElement(M + "sty", new XAttribute(M + "val", "p")))
+                : throw new NotSupportedException($"OmmlWriter does not support run style {style}.");
 }

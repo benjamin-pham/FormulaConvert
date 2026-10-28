@@ -63,6 +63,12 @@ internal static partial class OmmlReader
                 case "rad":
                     items.Add(ReadRadical(el, d));
                     break;
+                case "nary":
+                    items.Add(ReadNary(el, d));
+                    break;
+                case "func":
+                    items.Add(ReadFunction(el, d));
+                    break;
                 // Feature slices add cases here, e.g. `case "f": items.Add(ReadFrac(el, d)); break;`
                 default:
                     d.Add(new Diagnostic("unsupported-omml", $"unsupported OMML element m:{el.Name.LocalName}; reading its content", -1));

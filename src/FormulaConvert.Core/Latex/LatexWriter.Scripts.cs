@@ -53,7 +53,7 @@ internal static partial class LatexWriter
     {
         var flat = Flatten(node);
         if (flat.Count == 0) return;
-        if (flat.Count == 1 && flat[0] is not (Script or PreScript) && (flat[0] is not Run r || RuneCount(r) == 1))
+        if (flat.Count == 1 && flat[0] is not (Script or PreScript or Nary or FunctionApply) && (flat[0] is not Run r || RuneCount(r) == 1))
             WriteNode(flat[0], b);
         else
             WriteGroup(node, b);

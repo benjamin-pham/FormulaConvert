@@ -8,7 +8,8 @@ namespace FormulaConvert.Tests;
 public class SymbolSweepTests
 {
     public static IEnumerable<object[]> Rows() =>
-        CsvResource.ReadRows("symbols.csv").Select(r => new object[] { r[0], r[1] });
+        CsvResource.ReadRows("symbols.csv").Where(r => !NaryTable.TryGetByCommand(r[0], out _)) // n-ary commands parse to Nary nodes (NaryFunctionTests)
+            .Select(r => new object[] { r[0], r[1] });
 
     [Theory]
     [MemberData(nameof(Rows))]
@@ -34,6 +35,7 @@ public class SymbolSweepTests
 
     public static IEnumerable<object[]> NonAsciiCodepoints() =>
         CsvResource.ReadRows("symbols.csv").Select(r => CsvResource.ParseHex(r[1])).Where(cp => cp >= 0x80)
+            .Where(cp => !NaryTable.TryGetByChar(char.ConvertFromUtf32(cp), out _))
             .Distinct().Select(cp => new object[] { cp });
 
     [Theory]

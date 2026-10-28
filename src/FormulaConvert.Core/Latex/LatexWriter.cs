@@ -45,6 +45,12 @@ internal static partial class LatexWriter
             case Radical r:
                 WriteRadical(r, b);
                 break;
+            case Nary n:
+                WriteNary(n, b);
+                break;
+            case FunctionApply f:
+                WriteFunctionApply(f, b);
+                break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");

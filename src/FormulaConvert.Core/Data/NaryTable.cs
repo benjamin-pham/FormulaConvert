@@ -17,6 +17,9 @@ internal static class NaryTable
         return (byCommand, byChar);
     });
 
+    /// <summary>All n-ary commands (including aliases such as <c>\intop</c>).</summary>
+    public static IEnumerable<NaryInfo> All => Data.Value.ByCommand.Values;
+
     public static bool TryGetByCommand(string command, out NaryInfo info) =>
         Data.Value.ByCommand.TryGetValue(command, out info!);
 
