@@ -1,13 +1,13 @@
 namespace FormulaConvert.Ast;
 
-public enum Sty { Italic, Plain, Bold, BoldItalic }
+internal enum Sty { Italic, Plain, Bold, BoldItalic }
 
-public enum Scr { Roman, Script, Fraktur, DoubleStruck, SansSerif, Monospace }
+internal enum Scr { Roman, Script, Fraktur, DoubleStruck, SansSerif, Monospace }
 
-public enum FracKind { Bar, NoBar, Lin }
+internal enum FracKind { Bar, NoBar, Lin }
 
 [Flags]
-public enum BoxEdges
+internal enum BoxEdges
 {
     None = 0,
     Top = 1,
@@ -20,29 +20,29 @@ public enum BoxEdges
     StrikeDown = 128,
 }
 
-public abstract record FormulaNode;
+internal abstract record FormulaNode;
 
-public sealed record RunStyle(Sty Sty = Sty.Italic, Scr Scr = Scr.Roman, bool Normal = false);
+internal sealed record RunStyle(Sty Sty = Sty.Italic, Scr Scr = Scr.Roman, bool Normal = false);
 
-public sealed record FormulaRow(IReadOnlyList<FormulaNode> Items) : FormulaNode
+internal sealed record FormulaRow(IReadOnlyList<FormulaNode> Items) : FormulaNode
 {
     public static FormulaRow Empty { get; } = new FormulaRow(Array.Empty<FormulaNode>());
 }
 
-public sealed record Run(string Text, RunStyle Style) : FormulaNode;
+internal sealed record Run(string Text, RunStyle Style) : FormulaNode;
 
-public sealed record Frac(FormulaNode Num, FormulaNode Den, FracKind Kind) : FormulaNode;
+internal sealed record Frac(FormulaNode Num, FormulaNode Den, FracKind Kind) : FormulaNode;
 
-public sealed record Radical(FormulaNode? Degree, FormulaNode Body) : FormulaNode;
+internal sealed record Radical(FormulaNode? Degree, FormulaNode Body) : FormulaNode;
 
-public sealed record Script(FormulaNode Base, FormulaNode? Sub, FormulaNode? Sup) : FormulaNode;
+internal sealed record Script(FormulaNode Base, FormulaNode? Sub, FormulaNode? Sup) : FormulaNode;
 
-public sealed record PreScript(FormulaNode Base, FormulaNode? Sub, FormulaNode? Sup) : FormulaNode;
+internal sealed record PreScript(FormulaNode Base, FormulaNode? Sub, FormulaNode? Sup) : FormulaNode;
 
-public sealed record Nary(string Chr, FormulaNode? Sub, FormulaNode? Sup, FormulaNode Body, bool SubSupLimits) : FormulaNode;
+internal sealed record Nary(string Chr, FormulaNode? Sub, FormulaNode? Sup, FormulaNode Body, bool SubSupLimits) : FormulaNode;
 
 /// <summary>Brackets around one or more parts; <c>""</c> for Open/Close/Separator means absent.</summary>
-public sealed record Delimited(string Open, string Close, string Separator, IReadOnlyList<FormulaNode> Parts) : FormulaNode
+internal sealed record Delimited(string Open, string Close, string Separator, IReadOnlyList<FormulaNode> Parts) : FormulaNode
 {
     /// <summary>The <c>\binom</c> shape: default parentheses around one bar-less fraction.</summary>
     public static Delimited Binomial(FormulaNode top, FormulaNode bottom) =>
@@ -120,20 +120,20 @@ public sealed record Delimited(string Open, string Close, string Separator, IRea
 }
 
 /// <summary>Rows of cells. <c>ColumnAlign</c> is one of <c>l c r</c> per column with trailing <c>c</c> trimmed, or null when every column is centered.</summary>
-public sealed record Matrix(IReadOnlyList<IReadOnlyList<FormulaNode>> Rows, string? ColumnAlign) : FormulaNode;
+internal sealed record Matrix(IReadOnlyList<IReadOnlyList<FormulaNode>> Rows, string? ColumnAlign) : FormulaNode;
 
-public sealed record EqArray(IReadOnlyList<FormulaNode> Rows) : FormulaNode;
+internal sealed record EqArray(IReadOnlyList<FormulaNode> Rows) : FormulaNode;
 
-public sealed record Accent(string Chr, FormulaNode Body) : FormulaNode;
+internal sealed record Accent(string Chr, FormulaNode Body) : FormulaNode;
 
-public sealed record Bar(bool Top, FormulaNode Body) : FormulaNode;
+internal sealed record Bar(bool Top, FormulaNode Body) : FormulaNode;
 
-public sealed record GroupChar(string Chr, bool Top, FormulaNode Body) : FormulaNode;
+internal sealed record GroupChar(string Chr, bool Top, FormulaNode Body) : FormulaNode;
 
-public sealed record Limit(FormulaNode Base, FormulaNode Lim, bool Upper) : FormulaNode;
+internal sealed record Limit(FormulaNode Base, FormulaNode Lim, bool Upper) : FormulaNode;
 
-public sealed record FunctionApply(FormulaNode Name, FormulaNode Arg) : FormulaNode;
+internal sealed record FunctionApply(FormulaNode Name, FormulaNode Arg) : FormulaNode;
 
-public sealed record BorderBox(BoxEdges Edges, FormulaNode Body) : FormulaNode;
+internal sealed record BorderBox(BoxEdges Edges, FormulaNode Body) : FormulaNode;
 
-public sealed record Phantom(bool Show, bool ZeroWidth, bool ZeroAscent, bool ZeroDescent, FormulaNode Body) : FormulaNode;
+internal sealed record Phantom(bool Show, bool ZeroWidth, bool ZeroAscent, bool ZeroDescent, FormulaNode Body) : FormulaNode;
