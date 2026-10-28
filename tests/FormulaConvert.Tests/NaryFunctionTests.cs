@@ -11,6 +11,8 @@ public class NaryFunctionTests
         CaseRunner.Check(new ConversionCase(latex, ommlInner, canonical));
 
     private static string SSup(string e, string sup) => $"<m:sSup><m:e>{e}</m:e><m:sup>{sup}</m:sup></m:sSup>";
+    private static string SSubSup(string e, string sub, string sup) =>
+        $"<m:sSubSup><m:e>{e}</m:e><m:sub>{sub}</m:sub><m:sup>{sup}</m:sup></m:sSubSup>";
     private static string SSub(string e, string sub) => $"<m:sSub><m:e>{e}</m:e><m:sub>{sub}</m:sub></m:sSub>";
 
     /// <summary>m:nary; a null sub/sup is hidden (empty element plus subHide/supHide).</summary>
@@ -142,10 +144,43 @@ public class NaryFunctionTests
     [Fact] public void Empty_nary_operand_at_end_stays_bare() =>
         Check("\\sum_a", N("∑", R("a"), null, ""));
 
-    [Fact] public void Starred_operatorname_is_accepted() =>
-        Check("\\operatorname*{argmax}_x f", Fn(SSub(FName("argmax"), R("x")), R("f")), "\\argmax_x f"); // argmax is a known function: canonical is the command
-    [Fact] public void Starred_operatorname_unknown_name_writes_unstarred() =>
-        Check("\\operatorname*{foo}_x f", Fn(SSub(FName("foo"), R("x")), R("f")), "\\operatorname{foo}_x f");
+    // \operatorname* places a subscript below the name, like \lim.
+    [Fact] public void Starred_operatorname_is_a_limit() =>
+        Check("\\operatorname*{argmax}_x f", Fn(LimLow(FName("argmax"), R("x")), R("f")));
+    [Fact] public void Starred_operatorname_unknown_name() =>
+        Check("\\operatorname*{foo}_x f", Fn(LimLow(FName("foo"), R("x")), R("f")));
+    [Fact] public void Starred_operatorname_with_both_scripts_is_a_script() =>
+        Check("\\operatorname*{foo}_x^y f", Fn(SSubSup(FName("foo"), R("x"), R("y")), R("f")), "\\operatorname{foo}_x^y f");
+    [Fact] public void Starred_operatorname_without_scripts() =>
+        Check("\\operatorname*{foo}x", Fn(FName("foo"), R("x")), "\\operatorname{foo}x");
+    [Fact] public void Bounds_function_name_in_operatorname_star_writes_command() =>
+        Check("\\operatorname*{max}_i x", Fn(LimLow(FName("max"), R("i")), R("x")), "\\max_i x");
+
+    // The argument is math: commands become characters, never literal backslashes in m:t.
+    [Fact] public void Operatorname_argument_symbols() =>
+        Check("\\operatorname{\\alpha\\beta} x", Fn(FName("αβ"), R("x")), "\\operatorname{\\alpha\\beta}x");
+    [Fact] public void Operatorname_argument_spacing_is_dropped()
+    {
+        var r = FormulaConverter.LatexToOmml("\\operatorname{arg\\,max} x");
+        Assert.DoesNotContain("\\", r.Output);
+        Assert.True(SameXml(OMath(Fn(FName("argmax"), R("x"))), r.Output), r.Output);
+    }
+    [Fact] public void Operatorname_ignores_spaces() =>
+        Check("\\operatorname{ f o o } x", Fn(FName("foo"), R("x")), "\\operatorname{foo}x");
+    [Fact] public void Operatorname_empty_throws() =>
+        Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\operatorname{ }x"));
+
+    // Names with LaTeX specials are escaped character by character.
+    [Theory]
+    [InlineData("a}b", "\\operatorname{a\\}b}x")]
+    [InlineData("a%b", "\\operatorname{a\\%b}x")]
+    [InlineData("a_b", "\\operatorname{a\\_b}x")]
+    [InlineData("a\\b", "\\operatorname{a\\backslash b}x")]
+    public void Reader_function_name_with_specials(string name, string latex)
+    {
+        Assert.Equal(latex, FormulaConverter.OmmlToLatex(OMath(Fn(FName(name), R("x")))).Output);
+        Check(latex, Fn(FName(name), R("x")));
+    }
     [Fact] public void Starred_operatorname_has_no_diagnostic() =>
         Assert.Empty(FormulaConverter.LatexToOmml("\\operatorname*{argmax}_x f").Diagnostics);
 }

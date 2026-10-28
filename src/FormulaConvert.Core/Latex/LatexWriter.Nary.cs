@@ -35,7 +35,8 @@ internal static partial class LatexWriter
                 WriteScripts(s.Sub, s.Sup, b);
                 break;
             case [Limit l] when TryGetName(l.Base, out var name):
-                WriteFunctionName(name, b);
+                // A lone lower limit on a name that is not a bounds function needs \operatorname* to read back as a limit.
+                WriteFunctionName(name, b, starred: !l.Upper && !FunctionTable.BoundsFunctions.Contains("\\" + name));
                 b.Text(l.Upper ? "^" : "_");
                 WriteScriptArgument(l.Lim, b);
                 break;
@@ -57,16 +58,21 @@ internal static partial class LatexWriter
         return name.Length > 0;
     }
 
-    /// <summary>A known function as its command, any other name as <c>\operatorname{name}</c>.</summary>
-    private static void WriteFunctionName(string name, LatexBuilder b)
+    /// <summary>
+    /// A known function as its command, any other name (or a starred one) as <c>\operatorname{name}</c> with each
+    /// character escaped.
+    /// </summary>
+    private static void WriteFunctionName(string name, LatexBuilder b, bool starred = false)
     {
-        if (FunctionTable.Contains("\\" + name))
+        if (!starred && FunctionTable.Contains("\\" + name))
         {
             b.Command("\\" + name);
             return;
         }
         b.Command("\\operatorname");
-        b.Text("{" + name + "}");
+        b.Text(starred ? "*{" : "{");
+        foreach (var rune in name.EnumerateRunes()) WriteChar(rune, b);
+        b.Text("}");
     }
 
     /// <summary>

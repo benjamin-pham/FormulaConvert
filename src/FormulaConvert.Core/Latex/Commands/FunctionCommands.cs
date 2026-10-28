@@ -12,23 +12,48 @@ internal static class FunctionCommands
             t.Add(name, (p, n) => ParseFunction(p, n[1..], n));
         t.Add("\\operatorname", (p, n) =>
         {
-            if (p.Peek() is { Kind: TokenKind.Char, Text: "*" }) p.Next(); // \operatorname*: limits placement is not modelled, same as the plain form
+            bool starred = false;
+            if (p.Peek() is { Kind: TokenKind.Char, Text: "*" })
+            {
+                p.Next();
+                starred = true; // \operatorname*: a lone subscript goes below the name, like \lim
+            }
             int pos = p.Position;
-            var raw = p.ReadRawGroup().Trim();
-            if (raw.Length == 0) throw p.Error("empty function name", pos);
-            return ParseFunction(p, raw, "\\" + raw);
+            if (p.Peek().Kind != TokenKind.BeginGroup) throw p.Error("expected {");
+            var name = OperatorName(p.ReadArgument());
+            if (name is Run { Text.Length: 0 }) throw p.Error("empty function name", pos);
+            bool limits = starred || name is Run r && FunctionTable.BoundsFunctions.Contains("\\" + r.Text);
+            return ParseFunction(p, name, limits);
         });
     }
 
-    private static FormulaNode ParseFunction(LatexParser p, string text, string command)
+    /// <summary>The argument of <c>\operatorname</c>, parsed as math: its runs joined into one upright run (other content kept).</summary>
+    private static FormulaNode OperatorName(FormulaNode arg)
+    {
+        var items = new List<FormulaNode>();
+        Collect(arg, items);
+        if (items.All(i => i is Run))
+            return new Run(string.Concat(items.Cast<Run>().Select(r => r.Text)), new RunStyle(Sty.Plain));
+        return arg;
+
+        static void Collect(FormulaNode node, List<FormulaNode> items)
+        {
+            if (node is FormulaRow row) foreach (var item in row.Items) Collect(item, items);
+            else items.Add(node);
+        }
+    }
+
+    private static FormulaNode ParseFunction(LatexParser p, string text, string command) =>
+        ParseFunction(p, new Run(text, new RunStyle(Sty.Plain)), FunctionTable.BoundsFunctions.Contains(command));
+
+    private static FormulaNode ParseFunction(LatexParser p, FormulaNode name, bool limits)
     {
         bool? ignored = null;
         var (sub, sup) = NaryCommands.ReadScripts(p, ref ignored);
-        var name = new Run(text, new RunStyle(Sty.Plain));
         FormulaNode head = (sub, sup) switch
         {
             (null, null) => name,
-            (not null, null) when FunctionTable.BoundsFunctions.Contains(command) => new Limit(name, sub, false),
+            (not null, null) when limits => new Limit(name, sub, false),
             _ => new Script(name, sub, sup),
         };
         return new FunctionApply(head, NaryCommands.ReadOperand(p, true));
