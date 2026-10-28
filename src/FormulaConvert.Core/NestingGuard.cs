@@ -33,6 +33,6 @@ internal sealed class NestingGuard
         }
     }
 
-    private static FormulaParseException TooDeep(int position) =>
+    internal static FormulaParseException TooDeep(int position) =>
         new($"nesting too deep (more than {Limit} levels)", position);
 }

@@ -31,8 +31,8 @@ public static class FormulaConverter
         XElement root;
         try
         {
-            var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
-            using var reader = XmlReader.Create(new StringReader(omml), settings);
+            CheckDepth(omml);
+            using var reader = CreateReader(omml);
             root = XElement.Load(reader, LoadOptions.PreserveWhitespace);
         }
         catch (XmlException ex)
@@ -50,5 +50,19 @@ public static class FormulaConverter
         var diagnostics = new List<Diagnostic>();
         var outputs = formulas.Select(f => LatexWriter.Write(OmmlReader.Read(f, diagnostics)));
         return new ConvertResult(string.Join("\n", outputs), diagnostics);
+    }
+
+    private static XmlReader CreateReader(string xml) =>
+        XmlReader.Create(new StringReader(xml), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
+
+    /// <summary>Streams the XML and rejects over-deep nesting before any tree is built (tree building is quadratic in depth).</summary>
+    private static void CheckDepth(string xml)
+    {
+        using var reader = CreateReader(xml);
+        while (reader.Read())
+        {
+            if (reader.NodeType == XmlNodeType.Element && reader.Depth > NestingGuard.Limit)
+                throw NestingGuard.TooDeep(-1);
+        }
     }
 }
