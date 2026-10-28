@@ -145,9 +145,27 @@ public class EnvironmentTests
         Check("\\begin{matrix}a\\\\\\end{matrix}", Mx([[R("a")]]), "\\begin{matrix}a\\end{matrix}");
 
     [Fact] public void Empty_cells() => Check("\\begin{matrix}&a\\\\b&\\end{matrix}", Mx([["", R("a")], [R("b"), ""]]));
-    [Fact] public void Empty_body() => Check("\\begin{matrix}\\end{matrix}", "<m:m></m:m>");
-    [Fact] public void Empty_pmatrix_body() => Check("\\begin{pmatrix}\\end{pmatrix}", Dl("(", ")", "<m:m></m:m>"));
-    [Fact] public void Empty_align_body() => Check("\\begin{gathered}\\end{gathered}", "<m:eqArr></m:eqArr>");
+    // OMML has no empty m:m / m:eqArr / m:mr: an empty environment is one empty cell.
+    [Fact] public void Empty_body() => Check("\\begin{matrix}\\end{matrix}", Mx([[""]]));
+    [Fact] public void Empty_pmatrix_body() => Check("\\begin{pmatrix}\\end{pmatrix}", Dl("(", ")", Mx([[""]])));
+    [Fact] public void Empty_align_body() => Check("\\begin{gathered}\\end{gathered}", EqA(""));
+
+    [Fact]
+    public void Omml_ragged_rows_are_padded_when_written_back()
+    {
+        var omml = OMath(Mx([[R("a"), R("b")], [R("c")]]));
+        var latex = FormulaConverter.OmmlToLatex(omml).Output;
+        Assert.True(Xml.SameXml(OMath(Mx([[R("a"), R("b")], [R("c"), ""]])), FormulaConverter.LatexToOmml(latex).Output));
+    }
+
+    [Fact]
+    public void Omml_empty_row_is_written_with_a_cell()
+    {
+        var omml = OMath("<m:m><m:mr><m:e>" + R("a") + "</m:e></m:mr><m:mr></m:mr><m:mr><m:e>" + R("b") + "</m:e></m:mr></m:m>");
+        var latex = FormulaConverter.OmmlToLatex(omml).Output;
+        Assert.True(Xml.SameXml(OMath(Mx([[R("a")], [""], [R("b")]])), FormulaConverter.LatexToOmml(latex).Output));
+    }
+
 
     [Fact]
     public void Cell_content_is_full_math() =>

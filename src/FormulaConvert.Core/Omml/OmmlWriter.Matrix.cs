@@ -5,7 +5,7 @@ namespace FormulaConvert.Omml;
 
 internal static partial class OmmlWriter
 {
-    /// <summary><c>m:m</c>; <c>m:mPr</c> lists one <c>m:mc</c> per column up to the last non-centered one, and only when there is one.</summary>
+    /// <summary><c>m:m</c> (never empty); <c>m:mPr</c> lists one <c>m:mc</c> per column up to the last non-centered one, and only when there is one.</summary>
     private static XElement WriteMatrix(Matrix m)
     {
         var e = new XElement(M + "m");
@@ -21,14 +21,15 @@ internal static partial class OmmlWriter
             }
             e.Add(new XElement(M + "mPr", mcs));
         }
-        foreach (var row in m.Rows)
+        // OMML has no empty m:m or m:mr: pad every row to the widest (at least one cell) and give an empty matrix one row.
+        int width = Math.Max(1, m.Rows.Count == 0 ? 0 : m.Rows.Max(r => r.Count));
+        foreach (var row in m.Rows.Count == 0 ? [[]] : m.Rows)
         {
             var mr = new XElement(M + "mr");
             foreach (var cell in row) mr.Add(Element("e", cell));
-            if (!mr.HasElements) mr.Value = "";
+            for (int k = row.Count; k < width; k++) mr.Add(Element("e", FormulaRow.Empty));
             e.Add(mr);
         }
-        if (!e.HasElements) e.Value = "";
         return e;
     }
 
@@ -36,7 +37,7 @@ internal static partial class OmmlWriter
     {
         var e = new XElement(M + "eqArr");
         foreach (var row in a.Rows) e.Add(Element("e", row));
-        if (!e.HasElements) e.Value = "";
+        if (a.Rows.Count == 0) e.Add(Element("e", FormulaRow.Empty)); // OMML has no empty m:eqArr
         return e;
     }
 }
