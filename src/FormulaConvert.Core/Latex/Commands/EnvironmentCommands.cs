@@ -115,7 +115,11 @@ internal static class EnvironmentCommands
                     p.Next();
                     continue;
                 }
-                if (t.Kind == TokenKind.NewLine) p.Next();
+                if (t.Kind == TokenKind.NewLine)
+                {
+                    p.Next();
+                    SkipRowSpacing(p);
+                }
                 else more = false;
                 break;
             }
@@ -124,6 +128,18 @@ internal static class EnvironmentCommands
         p.PopContext();
         ReadEnd(p, name, at);
         return rows;
+    }
+
+    /// <summary>
+    /// After <c>\\</c>: an optional <c>*</c> and a <c>[…]</c> spacing argument are dropped (the latter with a warning).
+    /// Rule: a <c>[</c> directly after <c>\\</c> is always the spacing argument, as in LaTeX, so `a\\[b]c` loses `[b]`.
+    /// </summary>
+    private static void SkipRowSpacing(LatexParser p)
+    {
+        if (p.Peek() is { Kind: TokenKind.Char, Text: "*" }) p.Next();
+        int at = p.Peek().Position;
+        if (p.ReadRawOptional() is { } spacing)
+            p.Warn("lossy", $"row spacing [{spacing}] after \\\\ is dropped", at);
     }
 
     private static bool IsEnd(Token t) => t.Kind == TokenKind.Command && t.Text == "\\end";

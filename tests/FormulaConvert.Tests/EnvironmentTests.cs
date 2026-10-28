@@ -241,4 +241,68 @@ public class EnvironmentTests
     [Fact]
     public void Omml_eqarr_without_marks_is_gathered() =>
         Assert.Equal("\\begin{gathered}a\\\\b\\end{gathered}", FormulaConverter.OmmlToLatex(OMath(EqA(R("a"), R("b")))).Output);
+
+    private static string Frac(string n, string d) => "<m:f><m:num>" + n + "</m:num><m:den>" + d + "</m:den></m:f>";
+
+    [Theory]
+    [InlineData("\\begin{matrix}a\\\\[2pt]b\\end{matrix}")]
+    [InlineData("\\begin{matrix}a\\\\ [1em] b\\end{matrix}")]
+    [InlineData("\\begin{matrix}a\\\\*[2pt]b\\end{matrix}")]
+    public void Row_spacing_argument_is_dropped_with_one_warning(string latex)
+    {
+        var result = FormulaConverter.LatexToOmml(latex);
+        Assert.True(Xml.SameXml(OMath(Mx([[R("a")], [R("b")]])), result.Output));
+        Assert.Equal("lossy", Assert.Single(result.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Row_spacing_argument_in_align_and_cases()
+    {
+        var align = FormulaConverter.LatexToOmml("\\begin{align}a&=1\\\\[2pt]b&=2\\end{align}");
+        Assert.True(Xml.SameXml(OMath(EqA(R("a&=1"), R("b&=2"))), align.Output));
+        Assert.Equal("lossy", Assert.Single(align.Diagnostics).Code);
+        var cases = FormulaConverter.LatexToOmml("\\begin{cases}a\\\\[1ex]b\\end{cases}");
+        Assert.True(Xml.SameXml(OMath(Dl("{", "", EqA(R("a"), R("b")))), cases.Output));
+        Assert.Equal("lossy", Assert.Single(cases.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Bracket_right_after_row_break_is_always_spacing()
+    {
+        var result = FormulaConverter.LatexToOmml("\\begin{matrix}a\\\\[b]c\\end{matrix}");
+        Assert.True(Xml.SameXml(OMath(Mx([[R("a")], [R("c")]])), result.Output));
+        Assert.Single(result.Diagnostics);
+    }
+
+    [Fact]
+    public void Bracket_after_other_content_is_content() =>
+        Check("\\begin{matrix}a\\\\b[c]\\end{matrix}", Mx([[R("a")], [R("b[c]")]]));
+
+    [Fact]
+    public void Row_break_followed_by_closing_bracket_is_unchanged() =>
+        Check("\\begin{matrix}a\\\\]\\end{matrix}", Mx([[R("a")], [R("]")]]));
+
+    [Fact]
+    public void Hline_is_an_unknown_command_at_its_position()
+    {
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\begin{matrix}a\\\\\\hline b\\end{matrix}"));
+        Assert.Equal(17, ex.Position);
+        Assert.Contains("\\hline", ex.Message);
+    }
+
+    [Fact]
+    public void Escaped_ampersand_in_align_row_is_written_raw() =>
+        Assert.Equal("\\begin{align}a&b\\end{align}", FormulaConverter.OmmlToLatex(OMath(EqA(R("a&b")))).Output);
+
+    [Fact]
+    public void Environment_inside_fraction_argument() =>
+        Check("\\frac{\\begin{matrix}a\\end{matrix}}{b}", Frac(Mx([[R("a")]]), R("b")), "\\frac{\\begin{matrix}a\\end{matrix}}{b}");
+
+    [Fact]
+    public void Later_row_wider_than_first_pads_earlier_rows() =>
+        Check("\\begin{matrix}a\\\\b&c\\end{matrix}", Mx([[R("a"), ""], [R("b"), R("c")]]), "\\begin{matrix}a&\\\\b&c\\end{matrix}");
+
+    [Fact]
+    public void Ampersand_inside_left_right_in_cell_fails() =>
+        Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\begin{matrix}\\left(a&b\\right)\\end{matrix}"));
 }
