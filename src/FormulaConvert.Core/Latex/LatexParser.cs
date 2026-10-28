@@ -284,6 +284,10 @@ internal sealed partial class LatexParser
         {
             case TokenKind.BeginGroup:
                 return ParseGroup();
+            case TokenKind.Char when t.Text == "~":
+                Next();
+                Warn("out-of-scope", "~ is not supported by OMML", t.Position);
+                return FormulaRow.Empty;
             case TokenKind.Char:
             case TokenKind.LBracket:
             case TokenKind.RBracket:

@@ -10,6 +10,8 @@ internal static class OutOfScopeTable
         return d;
     });
 
+    public static IEnumerable<string> Names => Data.Value.Keys;
+
     public static bool TryGet(string command, out (int Arity, int KeptArg) rule) =>
         Data.Value.TryGetValue(command, out rule);
 }

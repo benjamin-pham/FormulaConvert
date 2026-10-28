@@ -1,0 +1,131 @@
+using FormulaConvert.Tests.Harness;
+using static FormulaConvert.Tests.Harness.Xml;
+
+namespace FormulaConvert.Tests;
+
+public class OutOfScopeTests
+{
+    /// <summary>Parses <paramref name="latex"/>, expects the OMML and exactly <paramref name="count"/> out-of-scope diagnostics.</summary>
+    private static ConvertResult Check(string latex, string ommlInner, int count = 1, string code = "out-of-scope")
+    {
+        var r = FormulaConverter.LatexToOmml(latex);
+        Assert.True(SameXml(OMath(ommlInner), r.Output), $"mismatch for `{latex}`\n  expected: {OMath(ommlInner)}\n  actual:   {r.Output}");
+        Assert.Equal(count, r.Diagnostics.Count);
+        Assert.All(r.Diagnostics, d => Assert.Equal(code, d.Code));
+        return r;
+    }
+
+    [Theory]
+    [InlineData("\\textcolor{red}{x+1}", "x+1")]
+    [InlineData("\\colorbox{yellow}{x}", "x")]
+    [InlineData("\\fcolorbox{a}{b}{x}", "x")]
+    [InlineData("\\mathcolor{#cd0030}{x}", "x")]
+    [InlineData("{\\color{blue} x+1}", "x+1")]
+    [InlineData("\\color{#cd0030} x", "x")]
+    [InlineData("\\Large x", "x")]
+    [InlineData("\\tiny{x}", "x")]
+    [InlineData("\\Huge x", "x")]
+    [InlineData("\\href{https://x.y/z}{x}", "x")]
+    [InlineData("\\class{c}{x}", "x")]
+    [InlineData("\\cssId{i}{x}", "x")]
+    [InlineData("\\htmlData{k=v}{x}", "x")]
+    [InlineData("\\htmlStyle{color:red}{x}", "x")]
+    [InlineData("\\texttip{x}{tip}", "x")]
+    [InlineData("\\mathtip{x}{y}", "x")]
+    [InlineData("\\error{x}", "x")]
+    [InlineData("\\displaystyle x", "x")]
+    [InlineData("\\textstyle x", "x")]
+    [InlineData("\\scriptstyle x", "x")]
+    [InlineData("\\scriptscriptstyle x", "x")]
+    [InlineData("\\mathop{x}", "x")]
+    [InlineData("\\mathrel{x}", "x")]
+    [InlineData("\\mathbin{x}", "x")]
+    [InlineData("\\mathord{x}", "x")]
+    [InlineData("\\mathopen{x}", "x")]
+    [InlineData("\\mathclose{x}", "x")]
+    [InlineData("\\mathpunct{x}", "x")]
+    [InlineData("\\mathinner{x}", "x")]
+    [InlineData("\\overgroup{AB}", "AB")]
+    [InlineData("\\underlinesegment{AB}", "AB")]
+    [InlineData("\\utilde{AB}", "AB")]
+    [InlineData("\\overarc{AB}", "AB")]
+    [InlineData("\\Overrightarrow{AB}", "AB")]
+    [InlineData("\\rlap{x}", "x")]
+    [InlineData("\\mathllap{x}", "x")]
+    [InlineData("\\fbox{x}", "x")]
+    [InlineData("\\raisebox{1em}{x}", "x")]
+    [InlineData("\\bbox[5px,border:2px solid red]{x}", "x")]
+    [InlineData("\\textsc{x}", "x")]
+    [InlineData("\\emph{x}", "x")]
+    [InlineData("\\bfseries x", "x")]
+    [InlineData("\\fontfamily{ptm} x", "x")]
+    [InlineData("\\fontsize{1}{2} x", "x")]
+    [InlineData("{\\bf x}", "x")]
+    [InlineData("\\relax x", "x")]
+    public void Wrapper_is_stripped_and_content_kept(string latex, string kept)
+    {
+        var r = Check(latex, R(kept));
+        Assert.Equal(latex.IndexOf((char)92), r.Diagnostics[0].Position);
+    }
+
+    [Fact]
+    public void Diagnostic_message_names_the_command()
+    {
+        var r = Check("x\\textcolor{red}{y}", R("xy"));
+        var d = Assert.Single(r.Diagnostics);
+        Assert.Equal("\\textcolor is not supported by OMML", d.Message);
+        Assert.Equal(1, d.Position);
+    }
+
+    [Fact]
+    public void Rule_and_ce()
+    {
+        Check("a\\rule{1em}{2em}b", R("ab"));
+        Check("a\\rule[1em]{1em}{2em}b", R("ab"));
+        Check("\\ce{H2O}", R("H2O", "<m:nor/>"));
+    }
+
+    [Theory]
+    [InlineData("a\\quad b")]
+    [InlineData("a\\qquad b")]
+    [InlineData("a\\hspace{1em}b")]
+    [InlineData("a\\hspace*{1em}b")]
+    [InlineData("a\\,b")]
+    [InlineData("a\\;b")]
+    [InlineData("a\\:b")]
+    [InlineData("a\\!b")]
+    [InlineData("a\\enskip b")]
+    [InlineData("a\\enspace b")]
+    [InlineData("a\\space b")]
+    [InlineData("a\\ b")]
+    [InlineData("a~b")]
+    public void Spacing_is_dropped(string latex) => Check(latex, R("ab"));
+
+    [Fact]
+    public void Tilde_position_is_its_own()
+    {
+        var r = Check("a~b", R("ab"));
+        Assert.Equal(1, r.Diagnostics[0].Position);
+    }
+
+    [Fact]
+    public void Each_spacing_command_warns_once() => Check("a\\quad b\\,c", R("abc"), 2);
+
+    [Fact]
+    public void Relax_and_stray_limits_are_dropped()
+    {
+        Check("\\relax", "");
+        var r = FormulaConverter.LatexToOmml("x\\limits");
+        Assert.Single(r.Diagnostics);
+    }
+
+    [Fact]
+    public void Missing_argument_is_an_error()
+    {
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\textcolor{red}"));
+        Assert.Equal(15, ex.Position);
+    }
+
+    [Fact]
+    public void Nested_wrappers_warn_each() => Check("\\textcolor{red}{\\Large x}", R("x"), 2);
+}
