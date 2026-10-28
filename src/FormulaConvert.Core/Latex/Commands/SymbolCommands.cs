@@ -67,7 +67,7 @@ internal static class SymbolCommands
             if (d >= radix) return false;
             value = value * radix + d;
         }
-        if (value > 0x10FFFF || !Rune.IsValid((int)value)) return false;
+        if (value > 0x10FFFF || !XmlChars.IsValid((int)value)) return false;
         cp = (int)value;
         return true;
     }

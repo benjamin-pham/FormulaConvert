@@ -31,7 +31,9 @@ public static class FormulaConverter
         XElement root;
         try
         {
-            root = XElement.Parse(omml, LoadOptions.PreserveWhitespace);
+            var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null };
+            using var reader = XmlReader.Create(new StringReader(omml), settings);
+            root = XElement.Load(reader, LoadOptions.PreserveWhitespace);
         }
         catch (XmlException ex)
         {

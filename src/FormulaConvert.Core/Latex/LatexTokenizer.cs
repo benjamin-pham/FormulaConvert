@@ -104,7 +104,7 @@ internal static class LatexTokenizer
             if (HasCarets(s, start, carets) && HasHex(s, start + carets, carets))
             {
                 var cp = int.Parse(s.AsSpan(start + carets, carets), System.Globalization.NumberStyles.HexNumber);
-                if (!Rune.IsValid(cp))
+                if (!XmlChars.IsValid(cp))
                     throw new FormulaParseException($"invalid character code {s.Substring(start, 2 * carets)}", start);
                 i = start + 2 * carets;
                 token = new Token(TokenKind.Char, char.ConvertFromUtf32(cp), start, i);
@@ -130,8 +130,17 @@ internal static class LatexTokenizer
         return true;
     }
 
-    private static string ReadRune(string s, int i) =>
-        char.IsHighSurrogate(s[i]) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]) ? s.Substring(i, 2) : s[i].ToString();
+    /// <summary>One code point at <paramref name="i"/>; unpaired surrogates and characters XML cannot hold throw.</summary>
+    private static string ReadRune(string s, int i)
+    {
+        if (char.IsHighSurrogate(s[i]) && i + 1 < s.Length && char.IsLowSurrogate(s[i + 1]))
+            return s.Substring(i, 2);
+        if (char.IsSurrogate(s[i]))
+            throw new FormulaParseException($"unpaired surrogate U+{(int)s[i]:X4}", i);
+        if (!XmlChars.IsValid(s[i]))
+            throw new FormulaParseException($"invalid character U+{(int)s[i]:X4}", i);
+        return s[i].ToString();
+    }
 
     internal static bool IsAsciiLetter(char c) => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z';
 }

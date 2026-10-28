@@ -17,13 +17,15 @@ internal sealed partial class LatexParser
     private readonly CommandTable _commands;
     private readonly int? _reportedPosition;
     private readonly int _aliasDepth;
+    private readonly NestingGuard _nesting;
     private int _index;
 
     /// <summary>One entry per open <c>{</c> (false) or optional <c>[</c> (true); decides whether <c>]</c> ends a row.</summary>
     private readonly Stack<bool> _contexts = new();
 
-    private LatexParser(string latex, List<Diagnostic> diagnostics, CommandTable commands, int? reportedPosition, int aliasDepth)
+    private LatexParser(string latex, List<Diagnostic> diagnostics, CommandTable commands, int? reportedPosition, int aliasDepth, NestingGuard nesting)
     {
+        _nesting = nesting;
         _source = latex;
         _commands = commands;
         _reportedPosition = reportedPosition;
@@ -41,7 +43,7 @@ internal sealed partial class LatexParser
 
     /// <summary>Parses a complete LaTeX formula; throws <see cref="FormulaParseException"/> on syntax errors.</summary>
     public static FormulaNode Parse(string latex, List<Diagnostic> diagnostics) =>
-        new LatexParser(latex, diagnostics, CommandTable.Default, null, 0).ParseAll();
+        new LatexParser(latex, diagnostics, CommandTable.Default, null, 0, new NestingGuard()).ParseAll();
 
     public List<Diagnostic> Diagnostics { get; }
 
@@ -67,6 +69,11 @@ internal sealed partial class LatexParser
 
     /// <summary>An exception at a given source position (still remapped inside alias expansions).</summary>
     public FormulaParseException Error(string message, int position) => new(message, _reportedPosition ?? position);
+
+    /// <summary>Recursion guard: wrap every nested parse in <c>EnterNesting(); … ExitNesting();</c> (throws "nesting too deep").</summary>
+    public void EnterNesting() => _nesting.Enter(Position);
+
+    public void ExitNesting() => _nesting.Exit();
 
     /// <summary>Adds a warning at <see cref="Position"/> (or at <paramref name="position"/>).</summary>
     public void Warn(string code, string message, int? position = null) =>
@@ -127,7 +134,10 @@ internal sealed partial class LatexParser
         var t = Peek();
         if (IsRowTerminator(t))
             throw Error("missing argument");
-        return t.Kind == TokenKind.BeginGroup ? ParseGroup() : ParseAtom();
+        EnterNesting();
+        var node = t.Kind == TokenKind.BeginGroup ? ParseGroup() : ParseAtom();
+        ExitNesting();
+        return node;
     }
 
     /// <summary>An optional <c>[…]</c> argument, or null when the next token is not <c>[</c>.</summary>
@@ -135,10 +145,12 @@ internal sealed partial class LatexParser
     {
         var open = Peek();
         if (open.Kind != TokenKind.LBracket) return null;
+        EnterNesting();
         Next();
         _contexts.Push(true);
         var node = ParseRowRest();
         _contexts.Pop();
+        ExitNesting();
         if (Peek().Kind != TokenKind.RBracket)
             throw Error("unclosed [", open.Position);
         Next();
@@ -167,10 +179,12 @@ internal sealed partial class LatexParser
 
     private FormulaNode ParseGroup()
     {
+        EnterNesting();
         var open = Next();
         _contexts.Push(false);
         var node = ParseRowRest();
         _contexts.Pop();
+        ExitNesting();
         if (Peek().Kind != TokenKind.EndGroup)
             throw Error("unclosed {", open.Position);
         Next();
@@ -231,7 +245,7 @@ internal sealed partial class LatexParser
             var arg = Peek().Kind == TokenKind.BeginGroup ? ReadRawGroup() : ReadRawToken();
             text.Replace("#" + n, arg);
         }
-        var sub = new LatexParser(text.ToString(), Diagnostics, _commands, _reportedPosition ?? command.Position, _aliasDepth + 1);
+        var sub = new LatexParser(text.ToString(), Diagnostics, _commands, _reportedPosition ?? command.Position, _aliasDepth + 1, _nesting);
         return sub.ParseAll();
     }
 

@@ -84,6 +84,8 @@ public class CoreTests
     [InlineData("<m:oMath")]
     [InlineData("not xml")]
     [InlineData("<doc/>")]
+    [InlineData("<!DOCTYPE m:oMath [<!ENTITY x \"a\">]><m:oMath xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\"><m:r><m:t>&x;</m:t></m:r></m:oMath>")]
+    [InlineData("<!DOCTYPE m:oMath SYSTEM \"file:///etc/passwd\"><m:oMath xmlns:m=\"http://schemas.openxmlformats.org/officeDocument/2006/math\"/>")]
     public void Malformed_xml_throws(string xml)
     {
         var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.OmmlToLatex(xml));
@@ -133,5 +135,67 @@ public class CoreTests
     {
         var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
         Assert.Equal(position, ex.Position);
+    }
+
+    [Theory]
+    [InlineData("\\unicode{0}", 8)]
+    [InlineData("\\unicode{\"FFFE}", 8)]
+    [InlineData("\\unicode{x1F}", 8)]
+    [InlineData("\\unicode{\"D800}", 8)]
+    [InlineData("a^^00", 1)]
+    [InlineData("^^01", 0)]
+    [InlineData("^^^^fffe", 0)]
+    [InlineData("\\char\"FFFE", 5)]
+    [InlineData("\\char\"1F", 5)]
+    [InlineData("\\char0", 5)]
+    [InlineData("a\u0001", 1)]
+    public void Characters_xml_cannot_hold_throw(string latex, int position)
+    {
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
+        Assert.Equal(position, ex.Position);
+    }
+
+    [Fact]
+    public void Unpaired_surrogates_throw()
+    {
+        // Built in code: xUnit's InlineData serialization replaces lone surrogates with U+FFFD.
+        foreach (var (latex, position) in new[] { ("a\uD800b", 1), ("\uDC00", 0), ("x\uDC00\uD800", 1), ("\\\uD800", 1), ("a\uD800", 1) })
+        {
+            var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
+            Assert.True(position == ex.Position, $"position for U+{(int)latex[position]:X4} case: expected {position}, got {ex.Position}");
+            Assert.Contains("surrogate", ex.Message);
+        }
+    }
+
+    [Theory]
+    [InlineData("^^09")]
+    [InlineData("\\unicode{\"E000}")]
+    [InlineData("\\unicode{\"10FFFF}")]
+    public void Xml_allowed_edge_characters_parse(string latex) =>
+        Assert.StartsWith("<m:oMath", FormulaConverter.LatexToOmml(latex).Output);
+
+    [Fact]
+    public void Deep_latex_nesting_throws()
+    {
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(new string('{', 100000)));
+        Assert.Equal(1000, ex.Position);
+        Assert.Contains("nesting too deep", ex.Message);
+    }
+
+    [Fact]
+    public void Nesting_up_to_limit_is_accepted()
+    {
+        var latex = new string('{', 1000) + "a" + new string('}', 1000);
+        Assert.Equal(OMath(R("a")), FormulaConverter.LatexToOmml(latex).Output);
+        Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("{" + latex + "}"));
+    }
+
+    [Fact]
+    public void Deep_omml_nesting_throws()
+    {
+        var inner = string.Concat(Enumerable.Repeat("<m:foo>", 5000)) + R("a") + string.Concat(Enumerable.Repeat("</m:foo>", 5000));
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.OmmlToLatex(OMath(inner)));
+        Assert.Equal(-1, ex.Position);
+        Assert.Contains("nesting too deep", ex.Message);
     }
 }

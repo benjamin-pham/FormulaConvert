@@ -15,7 +15,12 @@ internal static partial class OmmlReader
     private static readonly XNamespace M = OmmlNames.M;
 
     /// <summary>Reads the content of an <c>m:oMath</c> element.</summary>
-    public static FormulaNode Read(XElement root, List<Diagnostic> d) => ReadContent(root, d);
+    public static FormulaNode Read(XElement root, List<Diagnostic> d)
+    {
+        // Bounds all reader recursion (and the AST depth seen by LatexWriter) by the XML depth.
+        NestingGuard.CheckDepth(root, -1);
+        return ReadContent(root, d);
+    }
 
     /// <summary>Reads the children of a container element (<c>m:oMath</c>, <c>m:e</c>, <c>m:num</c>, …) as one row.</summary>
     internal static FormulaNode ReadContent(XElement? container, List<Diagnostic> d)

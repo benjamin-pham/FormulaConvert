@@ -21,6 +21,7 @@ internal static partial class LatexWriter
 
     internal static void WriteNode(FormulaNode node, LatexBuilder b)
     {
+        b.Nesting.Enter(-1);
         switch (node)
         {
             case FormulaRow row:
@@ -33,6 +34,7 @@ internal static partial class LatexWriter
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");
         }
+        b.Nesting.Exit();
     }
 
     private static void WriteRun(Run run, LatexBuilder b)
@@ -75,6 +77,9 @@ internal sealed class LatexBuilder
 
     private readonly StringBuilder _sb = new();
     private Pending _pending;
+
+    /// <summary>Depth guard for <see cref="LatexWriter.WriteNode"/> recursion.</summary>
+    public NestingGuard Nesting { get; } = new();
 
     /// <summary>Appends a control sequence such as <c>\alpha</c> or <c>\{</c>.</summary>
     public LatexBuilder Command(string command)
