@@ -33,6 +33,7 @@ internal sealed class CommandTable
         EnvironmentCommands.Register(table);
         AccentCommands.Register(table);
         OverUnderCommands.Register(table);
+        BoxCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

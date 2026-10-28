@@ -78,6 +78,12 @@ internal static partial class LatexWriter
             case Limit l:
                 WriteLimit(l, b);
                 break;
+            case BorderBox box:
+                WriteBorderBox(box, b);
+                break;
+            case Phantom ph:
+                WritePhantom(ph, b);
+                break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");

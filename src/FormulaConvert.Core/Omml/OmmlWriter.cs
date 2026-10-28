@@ -82,6 +82,8 @@ internal static partial class OmmlWriter
         Accent a => WriteAccent(a),
         Bar b => WriteBar(b),
         GroupChar g => WriteGroupChar(g),
+        BorderBox bb => WriteBorderBox(bb),
+        Phantom ph => WritePhantom(ph),
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };

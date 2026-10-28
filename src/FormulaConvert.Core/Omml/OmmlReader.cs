@@ -88,6 +88,12 @@ internal static partial class OmmlReader
                 case "limUpp":
                     items.Add(ReadLimit(el, d));
                     break;
+                case "borderBox":
+                    items.Add(ReadBorderBox(el, d));
+                    break;
+                case "phant":
+                    items.Add(ReadPhantom(el, d));
+                    break;
                 // Feature slices add cases here, e.g. `case "f": items.Add(ReadFrac(el, d)); break;`
                 default:
                     d.Add(new Diagnostic("unsupported-omml", $"unsupported OMML element m:{el.Name.LocalName}; reading its content", -1));
