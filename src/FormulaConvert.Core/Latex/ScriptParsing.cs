@@ -44,6 +44,12 @@ internal static class ScriptParsing
                         p.Next();
                         primes.Add(LatexParser.CharRun(Prime));
                     }
+                    if (p.Peek() is { Kind: TokenKind.Superscript } mark)
+                    {
+                        // x'^2 is x^{\prime 2}: the superscript continues after the primes.
+                        p.Next();
+                        primes.Add(ReadScriptArgument(p, mark));
+                    }
                     sup = LatexParser.Rowify(primes);
                     break;
                 default:

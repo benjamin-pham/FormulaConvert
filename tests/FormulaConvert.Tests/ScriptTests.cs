@@ -43,6 +43,8 @@ public class ScriptTests
     [Fact] public void Prime_command_sup() => Check("f^\\prime", SSup(R("f"), R("′")), "f^{\\prime}");
     [Fact] public void Prime_with_sub() => Check("f_1'", SSubSup(R("f"), R("1"), R("′")), "f_1^{\\prime}");
     [Fact] public void Prime_then_sub() => Check("f'_1", SSubSup(R("f"), R("1"), R("′")), "f_1^{\\prime}");
+    [Fact] public void Prime_then_sup() => Check("x'^2", SSup(R("x"), R("′2")), "x^{\\prime2}");
+    [Fact] public void Double_prime_then_sup_and_sub() => Check("x''^2_1", SSubSup(R("x"), R("1"), R("′′2")), "x_1^{\\prime\\prime2}");
     [Fact] public void Prime_followed_by_text() => Check("f' x", SSup(R("f"), R("′")) + R("x"), "f^{\\prime}x");
 
     [Fact]
@@ -93,7 +95,8 @@ public class ScriptTests
     [Theory]
     [InlineData("x^1^2", "double superscript", 3)]
     [InlineData("x_1_2", "double subscript", 3)]
-    [InlineData("x''^2", "double superscript", 3)]
+    [InlineData("x'^2^3", "double superscript", 4)]
+    [InlineData("x'^2'", "double superscript", 4)]
     [InlineData("x^2'", "double superscript", 3)]
     [InlineData("x^2_1^3", "double superscript", 5)]
     public void Double_script_throws(string latex, string message, int position)
