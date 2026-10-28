@@ -30,6 +30,7 @@ internal static partial class OmmlWriter
     {
         var e = new XElement(M + localName);
         WriteContent(e, content);
+        if (!e.HasElements) e.Value = ""; // serialize as <m:num></m:num>, not <m:num />
         return e;
     }
 
@@ -67,6 +68,8 @@ internal static partial class OmmlWriter
 
     private static XElement WriteNode(FormulaNode node) => node switch
     {
+        Frac f => WriteFrac(f),
+        Delimited { Parts: [Frac { Kind: FracKind.NoBar }] } d when d is { Open: "(", Close: ")" } => WriteBinomial(d),
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };

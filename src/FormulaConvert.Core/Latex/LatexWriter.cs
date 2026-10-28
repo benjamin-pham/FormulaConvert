@@ -30,6 +30,12 @@ internal static partial class LatexWriter
             case Run run:
                 WriteRun(run, b);
                 break;
+            case Frac f:
+                WriteFrac(f, b);
+                break;
+            case Delimited d when IsBinomial(d):
+                WriteBinomial(d, b);
+                break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");
