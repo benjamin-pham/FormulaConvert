@@ -34,7 +34,7 @@
 - **Dấu phẩy trên đơn** luôn bọc `{}` (`f^{\prime}`), ngoại lệ của quy tắc "bỏ `{}` khi một lệnh ký hiệu".
 - **Khoảng trắng hai chiều:** các lệnh khoảng trắng LaTeX (`\,`, `\:`, `\>`, `\;`, `\quad`, `\qquad`, `\enspace`, `\enskip`, `\ `, `~`, `\space`, `\nobreakspace`) ánh xạ sang ký tự khoảng trắng Unicode trong `m:t` (U+2009, U+2005, U+2004, U+2003, U+2002, U+00A0); `\!` không có trong OMML nên bị bỏ kèm cảnh báo `lossy`. Chiều ngược lại: U+2009/U+2006/U+200A ra `\,`, U+2005/U+205F ra `\:`, U+2004 ra `\;`, hai U+2003 liên tiếp ra `\qquad`, một U+2003 ra `\quad`, U+2002 ra `\enspace`, U+00A0/U+0020 ra `\ `; trong `\text{…}` (`m:nor`) giữ nguyên ký tự văn bản trần.
 - **Toán hạng** của `Nary` và `FunctionApply` là **atom kế tiếp** (nhóm `{…}`, một ký tự, hoặc một lệnh kèm chỉ số gắn liền); riêng đối số hàm bắt đầu bằng `(` hoặc `[` kéo dài đến ký tự đóng tương ứng. Writer bọc `{}` khi toán hạng nhiều mục (trừ đối số hàm là một chuỗi `Run` mở bằng `(` và đóng bằng `)`, ví dụ `\sin(x)`), nên parse lại ổn định.
-- `\binom` ↔ `Delimited("(", ")", "", [Frac(…, NoBar)])`; `\atop` ↔ `Frac NoBar`; `\choose` ↔ `\binom`.
+- `\binom` ↔ `Delimited("(", ")", "", [Frac(…, NoBar)])`; `\atop` ↔ `Frac NoBar`; `\choose` ↔ `\binom`; `\nicefrac` ↔ `Frac Skw` (`m:type="skw"`); `Frac Lin` (`m:type="lin"`, chỉ đọc từ OMML) xuất `n/d` kèm một cảnh báo `lossy` ở reader, mỗi vế bọc `{}` trừ khi là một `Run` đúng một `Rune`; phân số `Lin` không phải atom: làm cơ số chỉ số hay toán hạng thì cả cụm được bọc `{}` (`{a/b}^2`, `\sum{a/b}`).
 - Dấu `'` ↔ chỉ số trên `\prime` (U+2032); writer ra `^{\prime}`.
 - Ký tự `&` trong `align`/`gather`… giữ nguyên là `Run("&")` bên trong hàng của `EqArray` (đúng cách OMML đánh dấu điểm căn).
 - `Delimited` mất cỡ của `\bigl(` (ra ký tự trần, kèm cảnh báo `lossy`).
@@ -180,13 +180,13 @@
 | `\dbinom{n}{k}`, `\tbinom{n}{k}` | như `\binom` | `\binom{n}{k}` |
 | `n \choose k` | như `\binom` | `\binom{n}{k}` |
 | `a \atop b` | `F(R("a"),R("b"),noBar)` | `{a \atop b}` |
-| `\nicefrac{3}{4}` | `F(R("3"),R("4"),lin)` | |
+| `\nicefrac{3}{4}` | `F(R("3"),R("4"),skw)` | |
 | `\pdiff{f}{x}` | `F(R("∂f"),R("∂x"))` | `\frac{\partial f}{\partial x}` |
 | `\frac{}{}` | `F(,)` (num, den rỗng) | |
 | `\frac{a}{\frac{b}{c}}` | lồng | |
 | `\overwithdelims`/`\atopwithdelims` | không hỗ trợ: `FormulaParseException` | |
 
-  Reader: `m:f` có `type=skw` → đọc như `bar` kèm `lossy`; `m:d` mặc định chứa đúng một `m:f noBar` → `\binom`; `m:d` ngoặc khác chứa `m:f noBar` → `\left[ \frac…`. Writer `Frac` NoBar không bọc ngoặc ra `{a \atop b}`.
+  Reader: `m:f` có `type=skw` ↔ `\nicefrac` (không diagnostic); `type=lin` đọc thành `n/d` kèm `lossy`; `m:d` mặc định chứa đúng một `m:f noBar` → `\binom`; `m:d` ngoặc khác chứa `m:f noBar` → `\left[ \frac…`. Writer `Frac` NoBar không bọc ngoặc ra `{a \atop b}`.
 - [ ] **Step 2:** `dotnet test --filter FractionTests` → FAIL.
 - [ ] **Step 3: Implement.** `\frac`-họ: hai `ReadArgument`; `\cfrac`: `ReadOptionalArgument` trước; `\over`/`\atop`/`\choose` là infix: lấy `left` (gói nhiều mục thành `FormulaRow`), gọi `ParseRowRest()` cho vế phải, xóa `left`. Hai `\over` trong cùng một hàng → `Error("ambiguous \\over")`.
 - [ ] **Step 4:** `dotnet test` → PASS.

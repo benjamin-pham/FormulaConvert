@@ -12,10 +12,11 @@ internal static partial class OmmlReader
         {
             "noBar" => FracKind.NoBar,
             "lin" => FracKind.Lin,
+            "skw" => FracKind.Skw,
             _ => FracKind.Bar,
         };
-        if (type == "skw")
-            d.Add(new Diagnostic("lossy", "skewed fraction (m:type skw) is read as a regular fraction", -1));
+        if (type == "lin")
+            d.Add(new Diagnostic("lossy", "linear fraction (m:type lin) is read as a/b", -1));
         return new Frac(ReadContent(f.Element(M + "num"), d), ReadContent(f.Element(M + "den"), d), kind);
     }
 }

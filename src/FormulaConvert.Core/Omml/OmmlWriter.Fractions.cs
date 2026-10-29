@@ -11,7 +11,13 @@ internal static partial class OmmlWriter
         var e = new XElement(M + "f");
         if (f.Kind != FracKind.Bar)
         {
-            var type = f.Kind == FracKind.NoBar ? "noBar" : "lin";
+            var type = f.Kind switch
+            {
+                FracKind.NoBar => "noBar",
+                FracKind.Lin => "lin",
+                FracKind.Skw => "skw",
+                _ => "bar",
+            };
             e.Add(new XElement(M + "fPr", new XElement(M + "type", new XAttribute(M + "val", type))));
         }
         e.Add(Element("num", f.Num), Element("den", f.Den));

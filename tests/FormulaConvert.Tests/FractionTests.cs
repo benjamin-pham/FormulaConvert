@@ -48,7 +48,13 @@ public class FractionTests
     public void Binom_variants(string latex) => Check(latex, D(F(R("n"), R("k"), "noBar")), "\\binom{n}{k}");
 
     [Fact] public void Atop() => Check("a \\atop b", F(R("a"), R("b"), "noBar"), "{a \\atop b}");
-    [Fact] public void Nicefrac() => Check("\\nicefrac{3}{4}", F(R("3"), R("4"), "lin"));
+    [Fact]
+    public void Nicefrac()
+    {
+        Check("\\nicefrac{a}{b}", F(R("a"), R("b"), "skw"));
+        Assert.Empty(FormulaConverter.LatexToOmml("\\nicefrac{a}{b}").Diagnostics);
+        Assert.Empty(FormulaConverter.OmmlToLatex(OMath(F(R("a"), R("b"), "skw"))).Diagnostics);
+    }
     [Fact] public void Pdiff() => Check("\\pdiff{f}{x}", F(R("∂f"), R("∂x")), "\\frac{\\partial f}{\\partial x}");
     [Fact] public void Empty_frac() => Check("\\frac{}{}", F("", ""));
     [Fact] public void Nested_frac() => Check("\\frac{a}{\\frac{b}{c}}", F(R("a"), F(R("b"), R("c"))));
@@ -65,12 +71,69 @@ public class FractionTests
     }
 
     [Fact]
-    public void Reader_skw_reads_as_bar_with_lossy()
+    public void Reader_lin_single_char_sides()
     {
-        var r = FormulaConverter.OmmlToLatex(OMath(F(R("a"), R("b"), "skw")));
-        Assert.Equal("\\frac{a}{b}", r.Output);
+        var r = FormulaConverter.OmmlToLatex(OMath(F(R("a"), R("b"), "lin")));
+        Assert.Equal("a/b", r.Output);
         var d = Assert.Single(r.Diagnostics);
         Assert.Equal("lossy", d.Code);
+
+        var omml = FormulaConverter.LatexToOmml(r.Output);
+        Assert.NotNull(omml.Output);
+    }
+
+    [Fact]
+    public void Reader_lin_multi_char_side_braced()
+    {
+        var r = FormulaConverter.OmmlToLatex(OMath(F(R("a+b"), R("c"), "lin")));
+        Assert.Equal("{a+b}/c", r.Output);
+        var d = Assert.Single(r.Diagnostics);
+        Assert.Equal("lossy", d.Code);
+
+        var omml = FormulaConverter.LatexToOmml(r.Output);
+        Assert.NotNull(omml.Output);
+    }
+
+    [Fact]
+    public void Reader_lin_in_superscript_base_braced()
+    {
+        var xml = "<m:sSup><m:e>" + F(R("a"), R("b"), "lin") + "</m:e><m:sup>" + R("2") + "</m:sup></m:sSup>";
+        var r = FormulaConverter.OmmlToLatex(OMath(xml));
+        Assert.Equal("{a/b}^2", r.Output);
+        var d = Assert.Single(r.Diagnostics);
+        Assert.Equal("lossy", d.Code);
+
+        var omml = FormulaConverter.LatexToOmml(r.Output);
+        Assert.Contains("<m:sSup>", omml.Output);
+        Assert.Contains("<m:e>" + R("a/b") + "</m:e>", omml.Output);
+        Assert.Contains("<m:sup>" + R("2") + "</m:sup>", omml.Output);
+    }
+
+    [Fact]
+    public void Reader_lin_in_nested_fraction_numerator()
+    {
+        var xml = F(F(R("a"), R("b"), "lin"), R("c"));
+        var r = FormulaConverter.OmmlToLatex(OMath(xml));
+        Assert.Equal("\\frac{a/b}{c}", r.Output);
+        var d = Assert.Single(r.Diagnostics);
+        Assert.Equal("lossy", d.Code);
+
+        var omml = FormulaConverter.LatexToOmml(r.Output);
+        Assert.NotNull(omml.Output);
+    }
+
+    [Fact]
+    public void Reader_lin_as_nary_operand_braced()
+    {
+        var xml = "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:subHide m:val=\"1\"/><m:supHide m:val=\"1\"/></m:naryPr><m:sub/><m:sup/><m:e>"
+            + F(R("a"), R("b"), "lin") + "</m:e></m:nary>";
+        var r = FormulaConverter.OmmlToLatex(OMath(xml));
+        Assert.Equal("\\sum{a/b}", r.Output);
+        var d = Assert.Single(r.Diagnostics);
+        Assert.Equal("lossy", d.Code);
+
+        var omml = FormulaConverter.LatexToOmml(r.Output);
+        Assert.NotNull(omml.Output);
     }
 
     [Fact]

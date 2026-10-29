@@ -15,12 +15,30 @@ internal static partial class LatexWriter
                 WriteNode(f.Den, b);
                 b.Text("}");
                 break;
+            case FracKind.Skw:
+                b.Command("\\nicefrac");
+                WriteGroup(f.Num, b);
+                WriteGroup(f.Den, b);
+                break;
+            case FracKind.Lin:
+                WriteLinearFractionSide(f.Num, b);
+                b.Text("/");
+                WriteLinearFractionSide(f.Den, b);
+                break;
             default:
-                b.Command(f.Kind == FracKind.Lin ? "\\nicefrac" : "\\frac");
+                b.Command("\\frac");
                 WriteGroup(f.Num, b);
                 WriteGroup(f.Den, b);
                 break;
         }
+    }
+
+    private static void WriteLinearFractionSide(FormulaNode node, LatexBuilder b)
+    {
+        if (IsSingleAtom(node))
+            WriteNode(node, b);
+        else
+            WriteGroup(node, b);
     }
 
     /// <summary>A binomial (see <see cref="Delimited.IsBinomial"/>) as <c>\binom{n}{k}</c>.</summary>

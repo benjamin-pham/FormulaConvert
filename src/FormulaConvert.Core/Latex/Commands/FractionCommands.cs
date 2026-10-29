@@ -17,7 +17,7 @@ internal static class FractionCommands
         t.Add("\\binom", (p, name) => Binomial(p));
         t.Add("\\dbinom", (p, name) => Binomial(p, name));
         t.Add("\\tbinom", (p, name) => Binomial(p, name));
-        t.Add("\\nicefrac", (p, name) => Fraction(p, FracKind.Lin));
+        t.Add("\\nicefrac", (p, name) => Fraction(p, FracKind.Skw));
         t.Add("\\pdiff", PartialDerivative);
 
         t.AddInfix("\\over", (p, name, left) => Infix(p, name, left, (n, d) => new Frac(n, d, FracKind.Bar)));

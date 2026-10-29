@@ -88,6 +88,7 @@ internal static partial class LatexWriter
             {
                 Run r => RuneCount(r) == 1 && r.Text != " " && !(function && r.Text is "(" or "["),
                 PreScript => false,
+                Frac { Kind: FracKind.Lin } => false,
                 // A function argument starting with ( or [ is read up to the matching bracket: brace a script on one.
                 Script s => Flatten(s.Base).Count > 0 && !(function && StartsWithBracket(s.Base)),
                 _ => true,

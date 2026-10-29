@@ -173,7 +173,7 @@
   - `Latex/LatexWriter.Scripts.cs` (`WriteScriptBase`), `Latex/LatexWriter.Nary.cs` (`WriteOperand`).
 - Test: `tests/FormulaConvert.Tests/FractionTests.cs`
 
-- [ ] **Step 1: Viết test đỏ:**
+- [x] **Step 1: Viết test đỏ:**
   - `Check("\\nicefrac{a}{b}", F(R("a"), R("b"), "skw"))`; OMML `skw` không còn diagnostic.
   - Phân số `lin` (assert riêng, chỉ một chiều):
 
@@ -185,12 +185,12 @@
     | `F(F(R("a"),R("b"),"lin"), R("c"))` | `\frac{a/b}{c}` |
 
   - Mỗi chuỗi kết quả trên, `LatexToOmml` không ném. Với `{a/b}^2`, OMML có `sSup` với cơ số là hàng `a/b` (Review Focus 3).
-- [ ] **Step 2: Chạy** `dotnet test --filter FractionTests`. Kết quả mong đợi: FAIL.
-- [ ] **Step 3: Cài đặt** theo D4 trong spec.
+- [x] **Step 2: Chạy** `dotnet test --filter FractionTests`. Kết quả mong đợi: FAIL.
+- [x] **Step 3: Cài đặt** theo D4 trong spec.
   - Mỗi vế được bọc `{}` trừ khi nó là một `Run` có đúng một `Rune`.
   - `WriteScriptBase` và `WriteOperand` coi `Frac { Kind: Lin }` là không phải atom.
   - `lossy` phát ở reader, không ở writer.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa test `\nicefrac` cũ (đang chờ `lin`); cập nhật bảng Task 4 và "Quy ước" của plan 2026-10-28.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa test `\nicefrac` cũ (đang chờ `lin`); cập nhật bảng Task 4 và "Quy ước" của plan 2026-10-28.
 - [ ] **Step 5: Commit** `fix: map \nicefrac to skewed fractions and write linear fractions as a/b`.
 
 ### Task 5: Kiểu chữ: `\mathscr` và chữ Hy Lạp toán học

@@ -4,7 +4,7 @@ internal enum Sty { Italic, Plain, Bold, BoldItalic }
 
 internal enum Scr { Roman, Script, Fraktur, DoubleStruck, SansSerif, Monospace }
 
-internal enum FracKind { Bar, NoBar, Lin }
+internal enum FracKind { Bar, NoBar, Lin, Skw }
 
 [Flags]
 internal enum BoxEdges
