@@ -15,6 +15,19 @@ PREFERRED = {
     0x2265: "\\geq",
     0x2192: "\\rightarrow",
     0x2260: "\\ne",
+    0x2270: "\\nleq",
+    0x2271: "\\ngeq",
+    0x2288: "\\nsubseteq",
+    0x2289: "\\nsupseteq",
+    0x2224: "\\nmid",
+    0x2226: "\\nparallel",
+    0x2A87: "\\lneq",
+    0x2A88: "\\gneq",
+    0x2248: "\\approx",
+    0x223C: "\\sim",
+    0x2225: "\\parallel",
+    0x2223: "\\mid",
+    0x27F7: "\\longleftrightarrow",
 }
 
 # Greek capitals that MathLive only defines as macros (\Alpha ...), not pairs.

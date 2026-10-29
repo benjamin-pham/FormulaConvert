@@ -39,6 +39,26 @@ public class DataTableTests
     }
 
     [Theory]
+    [InlineData(0x2270, "\\nleq")]
+    [InlineData(0x2271, "\\ngeq")]
+    [InlineData(0x2288, "\\nsubseteq")]
+    [InlineData(0x2289, "\\nsupseteq")]
+    [InlineData(0x2224, "\\nmid")]
+    [InlineData(0x2226, "\\nparallel")]
+    [InlineData(0x2A87, "\\lneq")]
+    [InlineData(0x2A88, "\\gneq")]
+    [InlineData(0x2248, "\\approx")]
+    [InlineData(0x223C, "\\sim")]
+    [InlineData(0x2225, "\\parallel")]
+    [InlineData(0x2223, "\\mid")]
+    [InlineData(0x27F7, "\\longleftrightarrow")]
+    public void Canonical_reverse_command(int cp, string cmd)
+    {
+        Assert.True(SymbolTable.TryGetCommand(cp, out var got));
+        Assert.Equal(cmd, got);
+    }
+
+    [Theory]
     [InlineData("\\sum", "∑", false)]
     [InlineData("\\int", "∫", true)]
     [InlineData("\\oint", "∮", true)]
