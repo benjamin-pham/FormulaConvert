@@ -1,6 +1,4 @@
 .superpowers/
-.agents/
-.claude/
 bin/
 obj/
 *.user
