@@ -94,11 +94,11 @@ public class EnvironmentTests
     [Fact]
     public void Cases() =>
         Check("\\begin{cases}1&x>0\\\\0&x\\le0\\end{cases}",
-            Dl("{", "", EqA(R("1&x>0"), R("0&x≤0"))), "\\begin{cases}1&x>0\\\\0&x\\leq0\\end{cases}");
+            Dl("{", "", EqA(R("1") + R("x>0", "<m:aln/>"), R("0") + R("x≤0", "<m:aln/>"))), "\\begin{cases}1&x>0\\\\0&x\\leq0\\end{cases}");
 
     [Fact]
     public void Rcases() =>
-        Check("\\begin{rcases}a&b\\\\c&d\\end{rcases}", Dl("", "}", EqA(R("a&b"), R("c&d"))));
+        Check("\\begin{rcases}a&b\\\\c&d\\end{rcases}", Dl("", "}", EqA(R("a") + R("b", "<m:aln/>"), R("c") + R("d", "<m:aln/>"))));
 
     [Fact]
     public void Dcases_is_lossy()
@@ -107,14 +107,14 @@ public class EnvironmentTests
         Assert.Equal("lossy", Assert.Single(FormulaConverter.LatexToOmml("\\begin{dcases}a\\\\b\\end{dcases}").Diagnostics).Code);
     }
 
-    [Fact] public void Align() => Check("\\begin{align}f&=a\\\\&=b\\end{align}", EqA(R("f&=a"), R("&=b")));
+    [Fact] public void Align() => Check("\\begin{align}f&=a\\\\&=b\\end{align}", EqA(R("f") + R("=a", "<m:aln/>"), R("=b", "<m:aln/>")));
 
     [Theory]
     [InlineData("aligned")]
     [InlineData("split")]
     [InlineData("align*")]
     public void Align_family(string name) =>
-        Check($"\\begin{{{name}}}f&=a\\\\&=b\\end{{{name}}}", EqA(R("f&=a"), R("&=b")), "\\begin{align}f&=a\\\\&=b\\end{align}");
+        Check($"\\begin{{{name}}}f&=a\\\\&=b\\end{{{name}}}", EqA(R("f") + R("=a", "<m:aln/>"), R("=b", "<m:aln/>")), "\\begin{align}f&=a\\\\&=b\\end{align}");
 
     [Fact] public void Gathered() => Check("\\begin{gathered}a\\\\b\\end{gathered}", EqA(R("a"), R("b")));
     [Fact] public void Gather() => Check("\\begin{gather}a\\\\b\\end{gather}", EqA(R("a"), R("b")), "\\begin{gathered}a\\\\b\\end{gathered}");
@@ -131,7 +131,6 @@ public class EnvironmentTests
     [InlineData("math")]
     [InlineData("displaymath")]
     [InlineData("subequations")]
-    [InlineData("eqnarray")]
     [InlineData("center")]
     [InlineData("equation*")]
     public void Transparent(string name) => Check($"\\begin{{{name}}}x\\end{{{name}}}", R("x"), "x");
@@ -189,7 +188,7 @@ public class EnvironmentTests
     [Fact]
     public void Matrix_inside_align_row() =>
         Check("\\begin{align}a&=\\begin{pmatrix}1\\\\2\\end{pmatrix}\\end{align}",
-            EqA(R("a&=") + Dl("(", ")", Mx([[R("1")], [R("2")]]))));
+            EqA(R("a") + R("=", "<m:aln/>") + Dl("(", ")", Mx([[R("1")], [R("2")]]))));
 
     [Theory]
     [InlineData("\\begin{matrix}a&b\\end{pmatrix}", "matrix", "pmatrix")]
@@ -282,7 +281,7 @@ public class EnvironmentTests
     public void Row_spacing_argument_in_align_and_cases()
     {
         var align = FormulaConverter.LatexToOmml("\\begin{align}a&=1\\\\[2pt]b&=2\\end{align}");
-        Assert.True(Xml.SameXml(OMath(EqA(R("a&=1"), R("b&=2"))), align.Output));
+        Assert.True(Xml.SameXml(OMath(EqA(R("a") + R("=1", "<m:aln/>"), R("b") + R("=2", "<m:aln/>"))), align.Output));
         Assert.Equal("lossy", Assert.Single(align.Diagnostics).Code);
         var cases = FormulaConverter.LatexToOmml("\\begin{cases}a\\\\[1ex]b\\end{cases}");
         Assert.True(Xml.SameXml(OMath(Dl("{", "", EqA(R("a"), R("b")))), cases.Output));
@@ -328,4 +327,60 @@ public class EnvironmentTests
     [Fact]
     public void Ampersand_inside_left_right_in_cell_fails() =>
         Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\begin{matrix}\\left(a&b\\right)\\end{matrix}"));
+
+    [Fact]
+    public void Align_equation_alignment_points() =>
+        Check("\\begin{align}x&=1\\\\y&=2\\end{align}",
+            EqA(R("x") + R("=1", "<m:aln/>"), R("y") + R("=2", "<m:aln/>")));
+
+    [Fact]
+    public void Align_trailing_and_double_alignment_points()
+    {
+        Check("\\begin{align}x&\\\\y&\\end{align}",
+            EqA(R("x") + "<m:r><m:rPr><m:aln/></m:rPr><m:t></m:t></m:r>", R("y") + "<m:r><m:rPr><m:aln/></m:rPr><m:t></m:t></m:r>"));
+        Check("\\begin{align}a&&b\\end{align}",
+            EqA(R("a") + "<m:r><m:rPr><m:aln/></m:rPr><m:t></m:t></m:r>" + R("b", "<m:aln/>")));
+    }
+
+    [Fact]
+    public void Align_reads_legacy_verbatim_ampersand()
+    {
+        var r = FormulaConverter.OmmlToLatex(OMath(EqA(R("x&=1"), R("y&=2"))));
+        Assert.Equal("\\begin{align}x&=1\\\\y&=2\\end{align}", r.Output);
+    }
+
+    [Fact]
+    public void Eqnarray_maps_to_align()
+    {
+        Check("\\begin{eqnarray}a&=&b\\end{eqnarray}",
+            EqA(R("a") + R("=", "<m:aln/>") + R("b", "<m:aln/>")),
+            "\\begin{align}a&=&b\\end{align}");
+        Check("\\begin{eqnarray*}a&=&b\\end{eqnarray*}",
+            EqA(R("a") + R("=", "<m:aln/>") + R("b", "<m:aln/>")),
+            "\\begin{align}a&=&b\\end{align}");
+    }
+
+    [Fact]
+    public void Alignment_point_outside_eqArray_row_is_ignored()
+    {
+        // Inside m:m
+        var mResult = FormulaConverter.OmmlToLatex(OMath(Mx([[R("a", "<m:aln/>")]])));
+        Assert.Equal("\\begin{matrix}a\\end{matrix}", mResult.Output);
+
+        // Directly under m:oMath
+        var rootResult = FormulaConverter.OmmlToLatex(OMath(R("x", "<m:aln/>")));
+        Assert.Equal("x", rootResult.Output);
+
+        // Inside m:f within m:eqArr
+        var fResult = FormulaConverter.OmmlToLatex(OMath(EqA(Frac(R("1", "<m:aln/>"), R("2")))));
+        Assert.Equal("\\begin{gathered}\\frac{1}{2}\\end{gathered}", fResult.Output);
+    }
+
+    [Fact]
+    public void Manual_break_is_dropped_with_lossy_diagnostic()
+    {
+        var result = FormulaConverter.OmmlToLatex(OMath(R("x", "<m:brk/>")));
+        Assert.Equal("x", result.Output);
+        Assert.Equal("lossy", Assert.Single(result.Diagnostics).Code);
+    }
 }

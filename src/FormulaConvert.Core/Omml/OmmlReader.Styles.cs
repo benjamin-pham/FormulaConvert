@@ -10,11 +10,21 @@ internal static partial class OmmlReader
     /// <c>m:sty</c>/<c>m:scr</c>). Other children (<c>w:rPr</c>, …) are ignored.
     /// In non-normal math runs, replaces U+2212 with '-', decodes math alphanumerics, and merges consecutive characters of equal style.
     /// </summary>
-    private static void ReadRun(XElement r, List<FormulaNode> items, List<Diagnostic> d)
+    private static void ReadRun(XElement r, List<FormulaNode> items, List<Diagnostic> d, bool inEqArrayRow = false)
     {
+        var rPr = r.Element(M + "rPr");
+        if (rPr?.Element(M + "brk") is not null)
+        {
+            d.Add(new Diagnostic("lossy", "manual break (m:brk) is dropped", -1));
+        }
+
+        if (inEqArrayRow && rPr?.Element(M + "aln") is { } aln && !IsOff(aln))
+        {
+            items.Add(new Run("&", new RunStyle()));
+        }
+
         var text = string.Concat(r.Elements(M + "t").Select(t => t.Value));
         if (text.Length == 0) return;
-        var rPr = r.Element(M + "rPr");
         if (rPr?.Element(M + "nor") is { } nor && !IsOff(nor))
         {
             items.Add(new Run(text, new RunStyle(Normal: true)));

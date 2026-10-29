@@ -5,10 +5,10 @@ namespace FormulaConvert.Omml;
 
 internal static partial class OmmlWriter
 {
-    private static XElement WriteRun(string text, RunStyle style)
+    private static XElement WriteRun(string text, RunStyle style, bool hasAln = false)
     {
         var r = new XElement(M + "r");
-        var rPr = WriteRunProperties(style);
+        var rPr = WriteRunProperties(style, hasAln);
         if (rPr != null) r.Add(rPr);
         var t = new XElement(M + "t", text);
         bool edgeSpace = text.Length > 0 && (char.IsWhiteSpace(text[0]) || char.IsWhiteSpace(text[^1]));
@@ -20,27 +20,31 @@ internal static partial class OmmlWriter
 
     /// <summary>
     /// <c>m:rPr</c> for a style, or null for the default style. Children follow the schema order: <c>m:nor</c>
-    /// (which replaces the other styles), else <c>m:scr</c> then <c>m:sty</c>.
+    /// (which replaces the other styles), else <c>m:scr</c> then <c>m:sty</c>, and finally <c>m:aln</c>.
     /// </summary>
-    private static XElement? WriteRunProperties(RunStyle style)
+    private static XElement? WriteRunProperties(RunStyle style, bool hasAln = false)
     {
         var rPr = new XElement(M + "rPr");
         if (style.Normal)
         {
             rPr.Add(new XElement(M + "nor"));
-            return rPr;
         }
-        if (style.Scr != Scr.Roman)
-            rPr.Add(Val("scr", style.Scr switch
-            {
-                Scr.Script => "script",
-                Scr.Fraktur => "fraktur",
-                Scr.DoubleStruck => "double-struck",
-                Scr.SansSerif => "sans-serif",
-                _ => "monospace",
-            }));
-        if (style.Sty != Sty.Italic)
-            rPr.Add(Val("sty", style.Sty switch { Sty.Plain => "p", Sty.Bold => "b", _ => "bi" }));
+        else
+        {
+            if (style.Scr != Scr.Roman)
+                rPr.Add(Val("scr", style.Scr switch
+                {
+                    Scr.Script => "script",
+                    Scr.Fraktur => "fraktur",
+                    Scr.DoubleStruck => "double-struck",
+                    Scr.SansSerif => "sans-serif",
+                    _ => "monospace",
+                }));
+            if (style.Sty != Sty.Italic)
+                rPr.Add(Val("sty", style.Sty switch { Sty.Plain => "p", Sty.Bold => "b", _ => "bi" }));
+        }
+        if (hasAln)
+            rPr.Add(new XElement(M + "aln"));
         return rPr.HasElements ? rPr : null;
     }
 

@@ -36,8 +36,58 @@ internal static partial class OmmlWriter
     private static XElement WriteEqArray(EqArray a)
     {
         var e = new XElement(M + "eqArr");
-        foreach (var row in a.Rows) e.Add(Element("e", row));
+        foreach (var row in a.Rows)
+        {
+            var rowElement = new XElement(M + "e");
+            WriteEqArrayRow(rowElement, row);
+            if (!rowElement.HasElements) rowElement.Value = "";
+            e.Add(rowElement);
+        }
         if (a.Rows.Count == 0) e.Add(Element("e", FormulaRow.Empty)); // OMML has no empty m:eqArr
         return e;
+    }
+
+    private static void WriteEqArrayRow(XElement parent, FormulaNode row)
+    {
+        NestingGuard.EnsureStack(-1);
+        var items = new List<FormulaNode>();
+        Flatten(row, items);
+        for (int i = 0; i < items.Count; i++)
+        {
+            if (items[i] is Run run)
+            {
+                var text = new System.Text.StringBuilder(run.Text);
+                while (i + 1 < items.Count && items[i + 1] is Run next && next.Style == run.Style)
+                {
+                    text.Append(next.Text);
+                    i++;
+                }
+                var fullText = text.ToString();
+                if (!fullText.Contains('&'))
+                {
+                    parent.Add(WriteRun(fullText, run.Style));
+                }
+                else
+                {
+                    var pieces = fullText.Split('&');
+                    for (int k = 0; k < pieces.Length; k++)
+                    {
+                        if (k == 0)
+                        {
+                            if (pieces[0].Length > 0)
+                                parent.Add(WriteRun(pieces[0], run.Style, hasAln: false));
+                        }
+                        else
+                        {
+                            parent.Add(WriteRun(pieces[k], run.Style, hasAln: true));
+                        }
+                    }
+                }
+            }
+            else
+            {
+                parent.Add(WriteNode(items[i]));
+            }
+        }
     }
 }

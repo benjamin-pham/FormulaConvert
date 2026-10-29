@@ -27,5 +27,5 @@ internal static partial class OmmlReader
 
     /// <summary><c>m:eqArr</c>: one row per <c>m:e</c>.</summary>
     private static FormulaNode ReadEqArray(XElement el, List<Diagnostic> d) =>
-        new EqArray(el.Elements(M + "e").Select(e => ReadContent(e, d)).ToList());
+        new EqArray(el.Elements(M + "e").Select(e => ReadContent(e, d, inEqArrayRow: true)).ToList());
 }

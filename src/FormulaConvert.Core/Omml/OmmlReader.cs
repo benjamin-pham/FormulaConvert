@@ -31,10 +31,10 @@ internal static partial class OmmlReader
     }
 
     /// <summary>Reads the children of a container element (<c>m:oMath</c>, <c>m:e</c>, <c>m:num</c>, …) as one row.</summary>
-    internal static FormulaNode ReadContent(XElement? container, List<Diagnostic> d)
+    internal static FormulaNode ReadContent(XElement? container, List<Diagnostic> d, bool inEqArrayRow = false)
     {
         var items = new List<FormulaNode>();
-        if (container != null) ReadInto(container, items, d);
+        if (container != null) ReadInto(container, items, d, inEqArrayRow);
         return LatexParser.Rowify(items);
     }
 
@@ -42,11 +42,11 @@ internal static partial class OmmlReader
     /// A non-<c>m</c> element among math content: Word wrappers are read through (<see cref="TransparentW"/>) or
     /// skipped (<see cref="DeletedW"/>); any other element is skipped, with a warning when it holds math.
     /// </summary>
-    private static void ReadForeign(XElement el, List<FormulaNode> items, List<Diagnostic> d)
+    private static void ReadForeign(XElement el, List<FormulaNode> items, List<Diagnostic> d, bool inEqArrayRow)
     {
         if (el.Name.Namespace == W && TransparentW.Contains(el.Name.LocalName))
         {
-            ReadInto(el, items, d);
+            ReadInto(el, items, d, inEqArrayRow);
             return;
         }
         if (el.Name.Namespace == W && DeletedW.Contains(el.Name.LocalName)) return;
@@ -54,14 +54,14 @@ internal static partial class OmmlReader
             d.Add(new Diagnostic("unsupported-omml", $"unsupported element {el.Name.LocalName} ({el.Name.NamespaceName}) containing math; its content is dropped", -1));
     }
 
-    private static void ReadInto(XElement container, List<FormulaNode> items, List<Diagnostic> d)
+    private static void ReadInto(XElement container, List<FormulaNode> items, List<Diagnostic> d, bool inEqArrayRow = false)
     {
         NestingGuard.EnsureStack(-1);
         foreach (var el in container.Elements())
         {
             if (el.Name.Namespace != M)
             {
-                ReadForeign(el, items, d);
+                ReadForeign(el, items, d, inEqArrayRow);
                 continue;
             }
             switch (el.Name.LocalName)
@@ -69,7 +69,10 @@ internal static partial class OmmlReader
                 case "ctrlPr" or "argPr":
                     break;
                 case "r":
-                    ReadRun(el, items, d);
+                    ReadRun(el, items, d, inEqArrayRow);
+                    break;
+                case "brk":
+                    d.Add(new Diagnostic("lossy", "manual break (m:brk) is dropped", -1));
                     break;
                 case "f":
                     items.Add(ReadFrac(el, d));

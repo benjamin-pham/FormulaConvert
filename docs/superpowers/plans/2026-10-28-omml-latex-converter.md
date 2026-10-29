@@ -38,7 +38,7 @@
 - Dấu `'` ↔ chỉ số trên `\prime` (U+2032); writer ra `^{\prime}`. Trong `ReadRun` (run toán, không `m:nor`), dãy ký tự `′`/`″`/`‴` đứng ngay sau một `Rune` khác được tách thành `Script(Run(rune trước), null, Run(dãy prime))` (`f′(x)` → `f^{\prime}(x)`, `g″` → `g^{\prime\prime}`); `′` đứng riêng giữ nguyên là `\prime`.
 - **Dấu phụ rộng và dấu gạch của Word:** `\hat`/`\tilde`/`\check`/`\vec` với thân nhiều hơn một ký tự (`Flatten(body)` có hơn một mục hoặc một `Run` có hơn một `Rune`) xuất `\widehat`/`\widetilde`/`\widecheck`/`\overrightarrow`; U+20D6 thân nhiều ký tự xuất `\overleftarrow`. Thân đúng một ký tự giữ `\hat{x}`, `\vec{x}`… Reader chuyển `m:acc` với U+0305 thành `\overline` (`Bar(top: true)`), với U+0332 thành `\underline` (`Bar(top: false)`).
 - **Kiểu chữ script:** `scr="script"` xuất `\mathscr` (dạng chuẩn của MathLive; `\mathcal` vẫn được đọc sang `scr="script"`).
-- Ký tự `&` trong `align`/`gather`… giữ nguyên là `Run("&")` bên trong hàng của `EqArray` (đúng cách OMML đánh dấu điểm căn).
+- **Điểm căn hàng:** Word đánh dấu điểm căn trong `m:eqArr` bằng `<m:aln/>` trong `m:rPr` (ECMA-376 §22.1.2.3), không phải ký tự `&`. Writer tách run tại mỗi `&` trong hàng `EqArray` thành run có `m:aln` (kể cả khi rỗng). Reader đổi `m:aln` thành `Run("&")` (kể cả khi `m:t` rỗng) khi run là con trực tiếp của `m:e` trong `m:eqArr` (hoặc qua vỏ `w:` trong suốt); `&` nguyên văn trong `m:t` từ OMML cũ vẫn đọc thành điểm căn.
 - `Delimited` mất cỡ của `\bigl(` (ra ký tự trần, kèm cảnh báo `lossy`).
 - Mã `Diagnostic.Code`: `out-of-scope`, `lossy`, `unsupported-omml`.
 

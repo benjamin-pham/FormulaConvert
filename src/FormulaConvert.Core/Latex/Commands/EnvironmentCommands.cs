@@ -10,7 +10,7 @@ namespace FormulaConvert.Latex.Commands;
 internal static class EnvironmentCommands
 {
     private static readonly string[] BracketedMatrices = ["pmatrix", "bmatrix", "Bmatrix", "vmatrix", "Vmatrix"];
-    private static readonly string[] Transparent = ["equation", "math", "displaymath", "subequations", "eqnarray", "center"];
+    private static readonly string[] Transparent = ["equation", "math", "displaymath", "subequations", "center"];
 
     public static void Register(CommandTable t)
     {
@@ -57,13 +57,13 @@ internal static class EnvironmentCommands
                 var rows = ParseEquations(p, name, at);
                 return Delimited.OfCases(baseName == "rcases" ? "rcases" : "cases", rows);
             }
-            case "align" or "aligned" or "split" or "gather" or "gathered" or "multline" when !starred || baseName is "align" or "gather" or "multline":
+            case "align" or "aligned" or "split" or "gather" or "gathered" or "multline" or "eqnarray" when !starred || baseName is "align" or "gather" or "multline" or "eqnarray":
             {
                 if (baseName == "multline")
                     p.Warn("lossy", "multline is read as gathered (OMML has no multline layout)", at);
                 return ParseEquations(p, name, at);
             }
-            case "equation" or "math" or "displaymath" or "subequations" or "eqnarray" or "center" when !starred || baseName == "equation":
+            case "equation" or "math" or "displaymath" or "subequations" or "center" when !starred || baseName == "equation":
             {
                 p.PushContext(RowContext.Body);
                 var body = p.ParseRowRest();
