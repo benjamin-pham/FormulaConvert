@@ -69,7 +69,7 @@ internal static partial class OmmlReader
                 case "ctrlPr" or "argPr":
                     break;
                 case "r":
-                    if (ReadRun(el, d) is { } run) items.Add(run);
+                    ReadRun(el, items, d);
                     break;
                 case "f":
                     items.Add(ReadFrac(el, d));

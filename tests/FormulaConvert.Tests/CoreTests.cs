@@ -27,7 +27,8 @@ public class CoreTests
     [Fact] public void Double_bar_command() => Check("a\\|b", R("a\u2016b"), "a\u2016b");
     [Fact] public void Double_bar_alone() => Check("\\|", R("\u2016"), "\u2016");
     [Fact] public void Backslash_symbol() => Check("\\backslash", R("\\"));
-    [Fact] public void Non_bmp_passthrough() => Check("𝐀+é中", R("𝐀+é中"));
+    [Fact] public void Non_bmp_passthrough() => Check("𝄞+é中", R("𝄞+é中"));
+    [Fact] public void Unicode_minus_normalizes_to_ascii_hyphen() => Check("a−b", R("a-b"), "a-b");
 
     [Fact]
     public void Unknown_command_throws()

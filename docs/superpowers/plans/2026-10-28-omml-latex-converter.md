@@ -44,7 +44,7 @@
 2. Nhóm rỗng và đối số rỗng (`{}`, `\frac{}{}`, `^2` không có cơ sở, placeholder `\unicode{"2B1A}`) không được làm sập chương trình (Task 3, 4, 5).
 3. Đầu vào hỏng (thiếu `}`, `\left` không có `\right`, `\end` sai tên, hai `^` liên tiếp, lệnh lạ) phải cho `FormulaParseException` có vị trí, không xuất kết quả dở dang, CLI thoát mã 1 (Task 3, 5, 7, 8, 13).
 4. OMML thực tế từ Word có nhiễu: `m:ctrlPr`, `w:rPr` trong `m:r`, `m:oMathPara`, `xml:space="preserve"`, nút văn bản chỉ có khoảng trắng; không được sinh ký tự rác hay sập (Task 3).
-5. Ký tự ngoài BMP (cặp surrogate, ví dụ 𝐀) và ký tự không có lệnh LaTeX (é, 中) phải đi qua nguyên vẹn hai chiều (Task 3).
+5. Ký tự ngoài BMP không phải chữ toán học (cặp surrogate, ví dụ 𝄞) và ký tự không có lệnh LaTeX (é, 中) phải đi qua nguyên vẹn hai chiều (Task 3); ký tự chữ toán học ngoài BMP được giải mã bởi MathAlphaDecoder thành Run có kiểu chữ.
 
 ---
 
@@ -145,7 +145,7 @@
 | `Char_and_caret_forms` | `\char"2A17`, `^^41`, `^^^^2a17` | `R("⨗")`, `R("A")`, `R("⨗")` | `⨗`, `A`, `⨗` |
 | `Escaped_specials` | `\#\$\%\&\_\{\}` | `R("#$%&_{}")` | cùng chuỗi |
 | `Backslash_symbol` | `\backslash` | `R("\")` | |
-| `Non_bmp_passthrough` | `𝐀+é中` | `R("𝐀+é中")` | |
+| `Non_bmp_passthrough` | `𝄞+é中` | `R("𝄞+é中")` | |
 
   Thêm ngoài bảng: `Unknown_command_throws` (`\foo` → `FormulaParseException`, `Position == 0`); `Unbalanced_brace_throws` (`{a` và `a}` → exception, position đúng ký tự lỗi); `Reader_ignores_word_noise`: OMML `<m:oMathPara><m:oMath><m:r><w:rPr/><m:rPr><m:sty m:val="p"/></m:rPr><m:t xml:space="preserve">x</m:t></m:r><m:ctrlPr/>` kèm khoảng trắng giữa các thẻ, khai báo thêm namespace `w` → `OmmlToLatex` ra đúng `x` (Task 3 chưa đọc kiểu chữ; Task 11 sửa assert này thành `\mathrm{x}`); `Unknown_omml_element_warns`: phần tử `m:foo` chứa `R("a")` → output `a`, có một `Diagnostic` mã `unsupported-omml`; `Multiple_omath_joined_by_newline`; `Malformed_xml_throws` (Position `-1`).
   `SymbolSweepTests` (Theory duyệt toàn bộ `symbols.csv`): `LatexToOmml(command)` chứa đúng ký tự codepoint trong `m:t`; `OmmlToLatex(R(char))` trả lệnh chuẩn của codepoint (với ký tự tự do ngoài bảng, trả lại chính ký tự).

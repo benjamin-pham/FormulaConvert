@@ -8,47 +8,98 @@ internal static partial class OmmlReader
     /// <summary>
     /// <c>m:r</c>: the text of its <c>m:t</c> children with the style of <c>m:rPr</c> (<c>m:nor</c> wins over
     /// <c>m:sty</c>/<c>m:scr</c>). Other children (<c>w:rPr</c>, …) are ignored.
+    /// In non-normal math runs, replaces U+2212 with '-', decodes math alphanumerics, and merges consecutive characters of equal style.
     /// </summary>
-    private static Run? ReadRun(XElement r, List<Diagnostic> d)
+    private static void ReadRun(XElement r, List<FormulaNode> items, List<Diagnostic> d)
     {
         var text = string.Concat(r.Elements(M + "t").Select(t => t.Value));
-        if (text.Length == 0) return null;
+        if (text.Length == 0) return;
         var rPr = r.Element(M + "rPr");
-        if (rPr == null) return new Run(text, new RunStyle());
-        if (rPr.Element(M + "nor") is { } nor && !IsOff(nor))
-            return new Run(text, new RunStyle(Normal: true));
+        if (rPr?.Element(M + "nor") is { } nor && !IsOff(nor))
+        {
+            items.Add(new Run(text, new RunStyle(Normal: true)));
+            return;
+        }
 
-        var sty = Sty.Italic;
-        var scr = Scr.Roman;
-        if (rPr.Element(M + "sty") is { } styEl)
+        Sty? explicitSty = null;
+        Scr? explicitScr = null;
+
+        if (rPr != null)
         {
-            switch ((string?)styEl.Attribute(M + "val"))
+            if (rPr.Element(M + "sty") is { } styEl)
             {
-                case "p": sty = Sty.Plain; break;
-                case "b": sty = Sty.Bold; break;
-                case "bi": sty = Sty.BoldItalic; break;
-                case "i": break;
-                case var v:
-                    d.Add(new Diagnostic("unsupported-omml", $"unsupported m:sty value '{v}'; ignored", -1));
-                    break;
+                switch ((string?)styEl.Attribute(M + "val"))
+                {
+                    case "p": explicitSty = Sty.Plain; break;
+                    case "b": explicitSty = Sty.Bold; break;
+                    case "bi": explicitSty = Sty.BoldItalic; break;
+                    case "i": explicitSty = Sty.Italic; break;
+                    case var v:
+                        d.Add(new Diagnostic("unsupported-omml", $"unsupported m:sty value '{v}'; ignored", -1));
+                        break;
+                }
+            }
+            if (rPr.Element(M + "scr") is { } scrEl)
+            {
+                switch ((string?)scrEl.Attribute(M + "val"))
+                {
+                    case "roman": explicitScr = Scr.Roman; break;
+                    case "script": explicitScr = Scr.Script; break;
+                    case "fraktur": explicitScr = Scr.Fraktur; break;
+                    case "double-struck": explicitScr = Scr.DoubleStruck; break;
+                    case "sans-serif": explicitScr = Scr.SansSerif; break;
+                    case "monospace": explicitScr = Scr.Monospace; break;
+                    case var v:
+                        d.Add(new Diagnostic("unsupported-omml", $"unsupported m:scr value '{v}'; ignored", -1));
+                        break;
+                }
             }
         }
-        if (rPr.Element(M + "scr") is { } scrEl)
+
+        var baseStyle = new RunStyle(explicitSty ?? Sty.Italic, explicitScr ?? Scr.Roman);
+        var runBuffer = new System.Text.StringBuilder();
+        RunStyle? currentStyle = null;
+
+        void Flush()
         {
-            switch ((string?)scrEl.Attribute(M + "val"))
+            if (runBuffer.Length > 0 && currentStyle != null)
             {
-                case "roman": break;
-                case "script": scr = Scr.Script; break;
-                case "fraktur": scr = Scr.Fraktur; break;
-                case "double-struck": scr = Scr.DoubleStruck; break;
-                case "sans-serif": scr = Scr.SansSerif; break;
-                case "monospace": scr = Scr.Monospace; break;
-                case var v:
-                    d.Add(new Diagnostic("unsupported-omml", $"unsupported m:scr value '{v}'; ignored", -1));
-                    break;
+                items.Add(new Run(runBuffer.ToString(), currentStyle));
+                runBuffer.Clear();
             }
         }
-        return new Run(text, new RunStyle(sty, scr));
+
+        foreach (var rune in text.EnumerateRunes())
+        {
+            string chText;
+            RunStyle chStyle;
+
+            if (rune.Value == '\u2212')
+            {
+                chText = "-";
+                chStyle = baseStyle;
+            }
+            else if (MathAlphaDecoder.TryDecode(rune, out var ascii, out var decodedStyle))
+            {
+                chText = ascii.ToString();
+                chStyle = new RunStyle(explicitSty ?? decodedStyle.Sty, explicitScr ?? decodedStyle.Scr);
+            }
+            else
+            {
+                chText = rune.ToString();
+                chStyle = baseStyle;
+            }
+
+            if (currentStyle != null && currentStyle != chStyle)
+            {
+                Flush();
+            }
+
+            currentStyle = chStyle;
+            runBuffer.Append(chText);
+        }
+
+        Flush();
     }
 
     /// <summary>An on/off element whose <c>m:val</c> says off (<c>0</c>, <c>false</c>, <c>off</c>).</summary>

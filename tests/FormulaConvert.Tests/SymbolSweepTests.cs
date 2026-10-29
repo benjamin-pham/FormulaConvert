@@ -53,7 +53,7 @@ public class SymbolSweepTests
     [Theory]
     [InlineData("é")]
     [InlineData("中")]
-    [InlineData("𝐀")]
+    [InlineData("𝄞")]
     [InlineData("ж")]
     public void Unlisted_character_passes_through(string ch)
     {

@@ -1,6 +1,7 @@
 using System.Text;
 using FormulaConvert.Ast;
 using FormulaConvert.Data;
+using FormulaConvert.Omml;
 
 namespace FormulaConvert.Latex;
 
@@ -295,7 +296,13 @@ internal sealed partial class LatexParser
             case TokenKind.LBracket:
             case TokenKind.RBracket:
                 Next();
-                return CharRun(t.Text);
+                var text = t.Text == "\u2212" ? "-" : t.Text;
+                if (Rune.DecodeFromUtf16(text, out var rune, out _) == System.Buffers.OperationStatus.Done
+                    && MathAlphaDecoder.TryDecode(rune, out var ascii, out var style))
+                {
+                    return new Run(ascii.ToString(), style);
+                }
+                return CharRun(text);
             case TokenKind.Command:
                 return ParseCommand();
             case TokenKind.Ampersand when _contexts.Count > 0 && _contexts.Peek() == RowContext.Line:

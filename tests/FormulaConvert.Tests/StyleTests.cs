@@ -246,10 +246,76 @@ public class StyleTests
         Assert.Equal("\\mathbf{abc}", Read(R("abc", Sty("b")), out _));
     }
 
-    [Fact]
-    public void Math_alphanumerics_pass_through()
+    [Theory]
+    [InlineData("\U0001D400", "\\mathbf{A}")]
+    [InlineData("\U0001D49C", "\\mathcal{A}")]
+    [InlineData("\U0001D504", "\\mathfrak{A}")]
+    [InlineData("\U0001D538", "\\mathbb{A}")]
+    [InlineData("\U0001D4B6", "\\mathcal{a}")]
+    [InlineData("\U0001D51E", "\\mathfrak{a}")]
+    [InlineData("\U0001D552", "\\mathbb{a}")]
+    [InlineData("ℝ", "\\mathbb{R}")]
+    [InlineData("ℂ", "\\mathbb{C}")]
+    [InlineData("ℋ", "\\mathcal{H}")]
+    [InlineData("ℌ", "\\mathfrak{H}")]
+    [InlineData("ℕ", "\\mathbb{N}")]
+    [InlineData("ℙ", "\\mathbb{P}")]
+    [InlineData("ℚ", "\\mathbb{Q}")]
+    [InlineData("ℤ", "\\mathbb{Z}")]
+    [InlineData("ℬ", "\\mathcal{B}")]
+    [InlineData("ℰ", "\\mathcal{E}")]
+    [InlineData("ℱ", "\\mathcal{F}")]
+    [InlineData("ℐ", "\\mathcal{I}")]
+    [InlineData("ℒ", "\\mathcal{L}")]
+    [InlineData("ℳ", "\\mathcal{M}")]
+    [InlineData("ℛ", "\\mathcal{R}")]
+    [InlineData("ℯ", "\\mathcal{e}")]
+    [InlineData("ℊ", "\\mathcal{g}")]
+    [InlineData("ℴ", "\\mathcal{o}")]
+    [InlineData("ℭ", "\\mathfrak{C}")]
+    [InlineData("ℨ", "\\mathfrak{Z}")]
+    [InlineData("ℎ", "h")]
+    [InlineData("\U0001D670", "\\mathtt{A}")]
+    [InlineData("\U0001D68A", "\\mathtt{a}")]
+    [InlineData("\U0001D5A0", "\\mathsf{A}")]
+    [InlineData("\U0001D5D4", "\\mathbf{\\mathsf{A}}")]
+    [InlineData("\U0001D608", "\\mathsf{A}")]
+    [InlineData("\U0001D63C", "\\mathbfit{\\mathsf{A}}")]
+    [InlineData("\U0001D468", "\\mathbfit{A}")]
+    [InlineData("\U0001D4D0", "\\mathbf{\\mathcal{A}}")]
+    [InlineData("\U0001D56C", "\\mathbf{\\mathfrak{A}}")]
+    [InlineData("\U0001D7CE", "\\mathbf{0}")]
+    [InlineData("\U0001D7D8", "\\mathbb{0}")]
+    [InlineData("\U0001D7E2", "\\mathsf{0}")]
+    [InlineData("\U0001D7EC", "\\mathbf{\\mathsf{0}}")]
+    [InlineData("\U0001D7F6", "\\mathtt{0}")]
+    public void Math_alphanumerics_decode_to_styled_runs(string ch, string expectedLatex)
     {
-        Assert.Equal("\U0001D400", Read(R("\U0001D400"), out _));
+        Assert.Equal(expectedLatex, Read(R(ch), out var d));
+        Assert.Empty(d);
+        Assert.Equal(expectedLatex, FormulaConverter.OmmlToLatex(FormulaConverter.LatexToOmml(ch).Output).Output);
+    }
+
+    [Fact]
+    public void Mixed_characters_in_run_split_and_merge_by_style()
+    {
+        Assert.Equal("a\\mathbb{RC}b", Read(R("aℝℂb"), out var d));
+        Assert.Empty(d);
+        Assert.Equal("\\mathbf{AB}", Read(R("\U0001D400\U0001D401"), out var d2));
+        Assert.Empty(d2);
+    }
+
+    [Fact]
+    public void Explicit_rPr_combines_with_decoded_math_alphanumeric()
+    {
+        Assert.Equal("\\mathbf{\\mathbb{R}}", Read(R("ℝ", Sty("b")), out var d));
+        Assert.Empty(d);
+    }
+
+    [Fact]
+    public void Normal_text_keeps_math_alphanumerics_and_unicode_minus_literal()
+    {
+        Check("\\text{ℝ−𝐀}", R("ℝ−𝐀", Nor));
     }
 
     [Fact]
