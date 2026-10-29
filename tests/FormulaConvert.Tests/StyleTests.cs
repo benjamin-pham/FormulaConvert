@@ -37,14 +37,21 @@ public class StyleTests
     [Theory]
     [InlineData("\\mathbb{R}", "double-struck", "\\mathbb{R}")]
     [InlineData("\\Bbb{R}", "double-struck", "\\mathbb{R}")]
-    [InlineData("\\mathcal{R}", "script", "\\mathcal{R}")]
-    [InlineData("\\mathscr{R}", "script", "\\mathcal{R}")]
+    [InlineData("\\mathcal{R}", "script", "\\mathscr{R}")]
+    [InlineData("\\mathscr{R}", "script", "\\mathscr{R}")]
     [InlineData("\\mathfrak{R}", "fraktur", "\\mathfrak{R}")]
     [InlineData("\\mathsf{R}", "sans-serif", "\\mathsf{R}")]
     [InlineData("\\mathtt{R}", "monospace", "\\mathtt{R}")]
     [InlineData("\\texttt{R}", "monospace", "\\mathtt{R}")]
     public void Scr_commands(string latex, string val, string canonical) =>
         Check(latex, R("R", Scr(val)), canonical);
+
+    [Fact]
+    public void Script_command_canonical_is_mathscr()
+    {
+        Check("\\mathscr{L}", R("L", Scr("script")));
+        Check("\\mathcal{L}", R("L", Scr("script")), "\\mathscr{L}");
+    }
 
     [Fact]
     public void Nested_styles_combine() =>
@@ -248,30 +255,30 @@ public class StyleTests
 
     [Theory]
     [InlineData("\U0001D400", "\\mathbf{A}")]
-    [InlineData("\U0001D49C", "\\mathcal{A}")]
+    [InlineData("\U0001D49C", "\\mathscr{A}")]
     [InlineData("\U0001D504", "\\mathfrak{A}")]
     [InlineData("\U0001D538", "\\mathbb{A}")]
-    [InlineData("\U0001D4B6", "\\mathcal{a}")]
+    [InlineData("\U0001D4B6", "\\mathscr{a}")]
     [InlineData("\U0001D51E", "\\mathfrak{a}")]
     [InlineData("\U0001D552", "\\mathbb{a}")]
     [InlineData("ℝ", "\\mathbb{R}")]
     [InlineData("ℂ", "\\mathbb{C}")]
-    [InlineData("ℋ", "\\mathcal{H}")]
+    [InlineData("ℋ", "\\mathscr{H}")]
     [InlineData("ℌ", "\\mathfrak{H}")]
     [InlineData("ℕ", "\\mathbb{N}")]
     [InlineData("ℙ", "\\mathbb{P}")]
     [InlineData("ℚ", "\\mathbb{Q}")]
     [InlineData("ℤ", "\\mathbb{Z}")]
-    [InlineData("ℬ", "\\mathcal{B}")]
-    [InlineData("ℰ", "\\mathcal{E}")]
-    [InlineData("ℱ", "\\mathcal{F}")]
-    [InlineData("ℐ", "\\mathcal{I}")]
-    [InlineData("ℒ", "\\mathcal{L}")]
-    [InlineData("ℳ", "\\mathcal{M}")]
-    [InlineData("ℛ", "\\mathcal{R}")]
-    [InlineData("ℯ", "\\mathcal{e}")]
-    [InlineData("ℊ", "\\mathcal{g}")]
-    [InlineData("ℴ", "\\mathcal{o}")]
+    [InlineData("ℬ", "\\mathscr{B}")]
+    [InlineData("ℰ", "\\mathscr{E}")]
+    [InlineData("ℱ", "\\mathscr{F}")]
+    [InlineData("ℐ", "\\mathscr{I}")]
+    [InlineData("ℒ", "\\mathscr{L}")]
+    [InlineData("ℳ", "\\mathscr{M}")]
+    [InlineData("ℛ", "\\mathscr{R}")]
+    [InlineData("ℯ", "\\mathscr{e}")]
+    [InlineData("ℊ", "\\mathscr{g}")]
+    [InlineData("ℴ", "\\mathscr{o}")]
     [InlineData("ℭ", "\\mathfrak{C}")]
     [InlineData("ℨ", "\\mathfrak{Z}")]
     [InlineData("ℎ", "h")]
@@ -282,13 +289,18 @@ public class StyleTests
     [InlineData("\U0001D608", "\\mathsf{A}")]
     [InlineData("\U0001D63C", "\\mathbfit{\\mathsf{A}}")]
     [InlineData("\U0001D468", "\\mathbfit{A}")]
-    [InlineData("\U0001D4D0", "\\mathbf{\\mathcal{A}}")]
+    [InlineData("\U0001D4D0", "\\mathbf{\\mathscr{A}}")]
     [InlineData("\U0001D56C", "\\mathbf{\\mathfrak{A}}")]
     [InlineData("\U0001D7CE", "\\mathbf{0}")]
     [InlineData("\U0001D7D8", "\\mathbb{0}")]
     [InlineData("\U0001D7E2", "\\mathsf{0}")]
     [InlineData("\U0001D7EC", "\\mathbf{\\mathsf{0}}")]
     [InlineData("\U0001D7F6", "\\mathtt{0}")]
+    [InlineData("\U0001D6FC", "\\alpha")]
+    [InlineData("\U0001D736", "\\mathbfit{\\alpha}")]
+    [InlineData("\U0001D6AA", "\\mathbf{\\Gamma}")]
+    [InlineData("\U0001D6E4", "\\Gamma")]
+    [InlineData("\U0001D6B9", "\\mathbf{ϴ}")]
     public void Math_alphanumerics_decode_to_styled_runs(string ch, string expectedLatex)
     {
         Assert.Equal(expectedLatex, Read(R(ch), out var d));

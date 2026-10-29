@@ -101,7 +101,18 @@ internal static class MathAlphaDecoder
             return true;
         }
 
-        // 3. Mathematical Alphanumeric Symbols: Digits (U+1D7CE..U+1D7FF)
+        // 3. Mathematical Greek Symbols (U+1D6A8..U+1D74E: bold, italic, bold italic)
+        if (cp is >= 0x1D6A8 and <= 0x1D74E)
+        {
+            if (TryDecodeGreek(cp, 0x1D6A8, 0x1D6C2, BoldRoman, out ascii, out style)
+                || TryDecodeGreek(cp, 0x1D6E2, 0x1D6FC, ItalicRoman, out ascii, out style)
+                || TryDecodeGreek(cp, 0x1D71C, 0x1D736, BoldItalicRoman, out ascii, out style))
+            {
+                return true;
+            }
+        }
+
+        // 4. Mathematical Alphanumeric Symbols: Digits (U+1D7CE..U+1D7FF)
         if (cp is >= 0x1D7CE and <= 0x1D7FF)
         {
             int offset = cp - 0x1D7CE;
@@ -121,6 +132,26 @@ internal static class MathAlphaDecoder
         }
 
         ascii = '\0';
+        style = default!;
+        return false;
+    }
+
+    private static bool TryDecodeGreek(int cp, int upperStart, int lowerStart, RunStyle targetStyle, out char letter, out RunStyle style)
+    {
+        if (cp >= upperStart && cp <= upperStart + 24)
+        {
+            int offset = cp - upperStart;
+            letter = offset == 17 ? '\u03F4' : (char)('\u0391' + offset);
+            style = targetStyle;
+            return true;
+        }
+        if (cp >= lowerStart && cp <= lowerStart + 24)
+        {
+            letter = (char)('\u03B1' + (cp - lowerStart));
+            style = targetStyle;
+            return true;
+        }
+        letter = '\0';
         style = default!;
         return false;
     }

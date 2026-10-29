@@ -199,7 +199,7 @@
 - Modify: `Latex/Commands/StyleCommands.cs` (`ScrCommands`: `("\\mathscr", Scr.Script)` thay cho `\mathcal`), `Omml/MathAlphaDecoder.cs`
 - Test: `tests/FormulaConvert.Tests/StyleTests.cs`
 
-- [ ] **Step 1: Viết test đỏ:**
+- [x] **Step 1: Viết test đỏ:**
   - `Check("\\mathscr{L}", R("L", Scr("script")))`; `\mathcal{L}` cho cùng OMML, Canonical `\mathscr{L}`.
   - Đọc chữ Hy Lạp toán học:
 
@@ -210,8 +210,8 @@
     | `𝚪` | U+1D6AA | `\mathbf{\Gamma}` |
     | `𝛤` | U+1D6E4 | `\Gamma` |
     | `𝚹` | U+1D6B9 | `\mathbf{ϴ}` (U+03F4 ghi trần, vì không có lệnh) |
-- [ ] **Step 2: Chạy** `dotnet test --filter StyleTests`. Kết quả mong đợi: FAIL.
-- [ ] **Step 3: Cài đặt.** Thêm các khối, mỗi khối 25 ký tự, vào `MathAlphaDecoder.TryDecode` (giữ chữ ký hiện có, `out char`):
+- [x] **Step 2: Chạy** `dotnet test --filter StyleTests`. Kết quả mong đợi: FAIL.
+- [x] **Step 3: Cài đặt.** Thêm các khối, mỗi khối 25 ký tự, vào `MathAlphaDecoder.TryDecode` (giữ chữ ký hiện có, `out char`):
 
   | Kiểu | Hoa | Thường |
   |---|---|---|
@@ -220,8 +220,8 @@
   | đậm nghiêng | `1D71C`→U+0391 | `1D736`→U+03B1 |
 
   Riêng vị trí thứ 18 (offset 17) của mỗi khối hoa trả về U+03F4.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa kỳ vọng `\mathcal` cũ (`StyleTests`, `CoreTests`) và "Quy ước".
-- [ ] **Step 5: Commit** `fix: write script letters as \mathscr and decode math Greek letters`.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa kỳ vọng `\mathcal` cũ (`StyleTests`, `CoreTests`) và "Quy ước".
+- [x] **Step 5: Commit** `fix: write script letters as \mathscr and decode math Greek letters`.
 
 ### Task 6: Dấu phụ rộng, dấu gạch của Word, dấu phẩy trên
 

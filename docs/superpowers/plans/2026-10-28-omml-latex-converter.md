@@ -36,6 +36,7 @@
 - **Toán hạng** của `Nary` và `FunctionApply` là **atom kế tiếp** (nhóm `{…}`, một ký tự, hoặc một lệnh kèm chỉ số gắn liền); riêng đối số hàm bắt đầu bằng `(` hoặc `[` kéo dài đến ký tự đóng tương ứng. Writer bọc `{}` khi toán hạng nhiều mục (trừ đối số hàm là một chuỗi `Run` mở bằng `(` và đóng bằng `)`, ví dụ `\sin(x)`), nên parse lại ổn định.
 - `\binom` ↔ `Delimited("(", ")", "", [Frac(…, NoBar)])`; `\atop` ↔ `Frac NoBar`; `\choose` ↔ `\binom`; `\nicefrac` ↔ `Frac Skw` (`m:type="skw"`); `Frac Lin` (`m:type="lin"`, chỉ đọc từ OMML) xuất `n/d` kèm một cảnh báo `lossy` ở reader, mỗi vế bọc `{}` trừ khi là một `Run` đúng một `Rune`; phân số `Lin` không phải atom: làm cơ số chỉ số hay toán hạng thì cả cụm được bọc `{}` (`{a/b}^2`, `\sum{a/b}`).
 - Dấu `'` ↔ chỉ số trên `\prime` (U+2032); writer ra `^{\prime}`.
+- **Kiểu chữ script:** `scr="script"` xuất `\mathscr` (dạng chuẩn của MathLive; `\mathcal` vẫn được đọc sang `scr="script"`).
 - Ký tự `&` trong `align`/`gather`… giữ nguyên là `Run("&")` bên trong hàng của `EqArray` (đúng cách OMML đánh dấu điểm căn).
 - `Delimited` mất cỡ của `\bigl(` (ra ký tự trần, kèm cảnh báo `lossy`).
 - Mã `Diagnostic.Code`: `out-of-scope`, `lossy`, `unsupported-omml`.
@@ -455,7 +456,7 @@
 | `\mathbfit{x}` | `sty="bi"` | |
 | `\mathbb{R}` | `R("R", "<m:scr m:val=\"double-struck\"/>")` | |
 | `\Bbb{R}` | như trên | `\mathbb{R}` |
-| `\mathcal{A}`, `\mathscr{A}` | `scr="script"` | `\mathcal{A}` |
+| `\mathcal{A}`, `\mathscr{A}` | `scr="script"` | `\mathscr{A}` |
 | `\mathfrak{g}` | `scr="fraktur"` | |
 | `\mathsf{x}` | `scr="sans-serif"` | |
 | `\mathtt{x}`, `\texttt` | `scr="monospace"` | `\mathtt{x}` |

@@ -16,7 +16,7 @@ internal static class StyleCommands
 
     internal static readonly (string Command, Scr Scr)[] ScrCommands =
     [
-        ("\\mathcal", Scr.Script),
+        ("\\mathscr", Scr.Script),
         ("\\mathfrak", Scr.Fraktur),
         ("\\mathbb", Scr.DoubleStruck),
         ("\\mathsf", Scr.SansSerif),
