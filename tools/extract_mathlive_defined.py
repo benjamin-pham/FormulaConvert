@@ -82,6 +82,10 @@ def extract_mathlive_defined(mjs_path):
                 commands.add(cmd)
 
     # 5. String literals in arrays: ["\\x", ...]
+    # Safe and intentional: scanning array literals extracts parser delimiter arrays
+    # (e.g. ["\\left", ...], ["<}>", ..., "\\right"]) and symbol arrays.
+    # Non-command keys from shortcuts or chemistry parser cannot leak in because
+    # INLINE_SHORTCUTS and mhchemParser blocks are stripped prior to this scan.
     for m in re.finditer(r"\[([^\]]+)\]", src):
         content = re.sub(r"//[^\n]*", "", m.group(1))
         for s_match in re.finditer(r"['\"](\\\\(?:[A-Za-z]+|[^A-Za-z0-9\s]| ))['\"]", content):
