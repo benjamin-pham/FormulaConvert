@@ -66,7 +66,7 @@ internal static partial class OmmlReader
             }
             switch (el.Name.LocalName)
             {
-                case "ctrlPr":
+                case "ctrlPr" or "argPr":
                     break;
                 case "r":
                     if (ReadRun(el, d) is { } run) items.Add(run);
@@ -119,6 +119,9 @@ internal static partial class OmmlReader
                     break;
                 case "borderBox":
                     items.Add(ReadBorderBox(el, d));
+                    break;
+                case "box":
+                    if (el.Element(M + "e") is { } boxBody) ReadInto(boxBody, items, d);
                     break;
                 case "phant":
                     items.Add(ReadPhantom(el, d));

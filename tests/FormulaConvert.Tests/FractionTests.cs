@@ -85,4 +85,15 @@ public class FractionTests
         var xml = "<m:d><m:dPr><m:begChr m:val=\"(\"/><m:endChr m:val=\")\"/></m:dPr><m:e>" + F(R("n"), R("k"), "noBar") + "</m:e></m:d>";
         Assert.Equal("\\binom{n}{k}", FormulaConverter.OmmlToLatex(OMath(xml)).Output);
     }
+
+    [Fact]
+    public void Reader_small_fraction_ignores_argPr()
+    {
+        var xml = "<m:f><m:fPr><m:type m:val=\"bar\"/></m:fPr>"
+            + "<m:num><m:argPr><m:argSz m:val=\"-2\"/></m:argPr>" + R("a") + "</m:num>"
+            + "<m:den><m:argPr><m:argSz m:val=\"-2\"/></m:argPr>" + R("b") + "</m:den></m:f>";
+        var r = FormulaConverter.OmmlToLatex(OMath(xml));
+        Assert.Equal("\\frac{a}{b}", r.Output);
+        Assert.Empty(r.Diagnostics);
+    }
 }
