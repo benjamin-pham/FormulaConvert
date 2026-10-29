@@ -50,3 +50,5 @@
 \hom
 \varprojlim
 \projlim
+\sech
+\csch

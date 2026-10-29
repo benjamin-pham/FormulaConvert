@@ -40,6 +40,8 @@ public class AccentTests
     [InlineData("\\ddddot", "⃜")]
     [InlineData("\\acute", "́")]
     [InlineData("\\grave", "̀")]
+    [InlineData("\\overleftharpoon", "⃐")]
+    [InlineData("\\overrightharpoon", "⃑")]
     public void Accent_commands(string command, string chr) =>
         Check(command + "{x}", Ac(chr, R("x")));
 

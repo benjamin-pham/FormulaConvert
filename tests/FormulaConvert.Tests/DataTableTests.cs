@@ -103,4 +103,30 @@ public class DataTableTests
         var n = CsvResource.ReadRows("symbols.csv").Count();
         Assert.True(n >= 480, n.ToString());
     }
+
+    [Fact]
+    public void No_symbol_uses_private_use_area()
+    {
+        foreach (var r in CsvResource.ReadRows("symbols.csv"))
+        {
+            int cp = CsvResource.ParseHex(r[1]);
+            Assert.False(cp is >= 0xE000 and <= 0xF8FF, $"{r[0]} uses PUA codepoint U+{cp:X4}");
+        }
+    }
+
+    [Theory]
+    [InlineData("\\iddots", 0x22F0)]
+    [InlineData("\\nequiv", 0x2262)]
+    [InlineData("\\rightangle", 0x221F)]
+    [InlineData("\\ratio", 0x2236)]
+    [InlineData("\\qed", 0x220E)]
+    [InlineData("\\AA", 0x212B)]
+    [InlineData("\\dotminus", 0x2238)]
+    [InlineData("\\dlsh", 0x21B2)]
+    [InlineData("\\drsh", 0x21B3)]
+    public void Word_gallery_symbols_exist(string cmd, int cp)
+    {
+        Assert.True(SymbolTable.TryGetCodepoint(cmd, out var got));
+        Assert.Equal(cp, got);
+    }
 }

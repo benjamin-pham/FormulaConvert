@@ -25,6 +25,24 @@ GREEK_CAPS = {
     "\\Chi": 0x3A7,
 }
 
+# KaTeX Private Use Area (PUA) codepoints (U+E006..U+E01B) mapped to standard Unicode math operators.
+PUA_REPLACEMENTS = {
+    0xE006: 0x2224,  # \nshortmid
+    0xE007: 0x2226,  # \nshortparallel
+    0xE00C: 0x2268,  # \lvertneqq
+    0xE00D: 0x2269,  # \gvertneqq
+    0xE00E: 0x2271,  # \ngeqq
+    0xE00F: 0x2A88,  # \ngeqslant
+    0xE010: 0x2A87,  # \nleqslant
+    0xE011: 0x2270,  # \nleqq
+    0xE016: 0x2288,  # \nsubseteqq
+    0xE017: 0x2ACB,  # \varsubsetneqq
+    0xE018: 0x2289,  # \nsupseteqq
+    0xE019: 0x2ACC,  # \varsupsetneqq
+    0xE01A: 0x228A,  # \varsubsetneq
+    0xE01B: 0x228B,  # \varsupsetneq
+}
+
 
 def main(html_path, mjs_path, out_dir):
     with open(html_path, encoding="utf-8", errors="replace") as f:
@@ -53,10 +71,14 @@ def main(html_path, mjs_path, out_dir):
         cmd = m.group(1).replace("\\\\", "\\")
         if cmd not in done:
             done.add(cmd)
-            pairs.append((cmd, int(m.group(2))))
+            cp = int(m.group(2))
+            cp = PUA_REPLACEMENTS.get(cp, cp)
+            pairs.append((cmd, cp))
     canon = {}
     for m in re.finditer(r'^\s*(\d+): "(\\\\[A-Za-z]+)"', src, re.M):
-        canon.setdefault(int(m.group(1)), m.group(2).replace("\\\\", "\\"))
+        cp = int(m.group(1))
+        cp = PUA_REPLACEMENTS.get(cp, cp)
+        canon.setdefault(cp, m.group(2).replace("\\\\", "\\"))
     for cmd, cp in GREEK_CAPS.items():
         if cmd not in done:
             done.add(cmd)

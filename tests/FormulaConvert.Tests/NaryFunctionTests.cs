@@ -188,4 +188,17 @@ public class NaryFunctionTests
     }
     [Fact] public void Starred_operatorname_has_no_diagnostic() =>
         Assert.Empty(FormulaConverter.LatexToOmml("\\operatorname*{argmax}_x f").Diagnostics);
+
+    [Theory]
+    [InlineData("\\sech x", "sech")]
+    [InlineData("\\csch x", "csch")]
+    public void Hyperbolic_sech_and_csch(string latex, string name) =>
+        Check(latex, Fn(FName(name), R("x")));
+
+    [Theory]
+    [InlineData("\\intclockwise_C f", "∱")]
+    [InlineData("\\varointclockwise_C f", "∲")]
+    [InlineData("\\ointctrclockwise_C f", "∳")]
+    public void Oriented_integrals_are_nary(string latex, string chr) =>
+        Check(latex, N(chr, R("C"), null, R("f")));
 }

@@ -19,3 +19,7 @@
 \bigoplus,2A01,false
 \bigodot,2A00,false
 \bigsqcup,2A06,false
+\intclockwise,2231,true
+\varointclockwise,2232,true
+\ointctrclockwise,2233,true
+\intctrclockwise,2A11,true
