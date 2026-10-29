@@ -86,30 +86,9 @@ public class OutOfScopeTests
     }
 
     [Theory]
-    [InlineData("a\\quad b")]
-    [InlineData("a\\qquad b")]
     [InlineData("a\\hspace{1em}b")]
     [InlineData("a\\hspace*{1em}b")]
-    [InlineData("a\\,b")]
-    [InlineData("a\\;b")]
-    [InlineData("a\\:b")]
-    [InlineData("a\\!b")]
-    [InlineData("a\\enskip b")]
-    [InlineData("a\\enspace b")]
-    [InlineData("a\\space b")]
-    [InlineData("a\\ b")]
-    [InlineData("a~b")]
     public void Spacing_is_dropped(string latex) => Check(latex, R("ab"));
-
-    [Fact]
-    public void Tilde_position_is_its_own()
-    {
-        var r = Check("a~b", R("ab"));
-        Assert.Equal(1, r.Diagnostics[0].Position);
-    }
-
-    [Fact]
-    public void Each_spacing_command_warns_once() => Check("a\\quad b\\,c", R("abc"), 2);
 
     [Fact]
     public void Relax_is_dropped() => Check("\\relax", "");

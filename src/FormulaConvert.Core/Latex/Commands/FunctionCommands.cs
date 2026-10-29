@@ -27,13 +27,17 @@ internal static class FunctionCommands
         });
     }
 
-    /// <summary>The argument of <c>\operatorname</c>, parsed as math: its runs joined into one upright run (other content kept).</summary>
+    /// <summary>The argument of <c>\operatorname</c>, parsed as math: its runs joined into one upright run (other content kept, spaces dropped).</summary>
     private static FormulaNode OperatorName(FormulaNode arg)
     {
         var items = new List<FormulaNode>();
         Collect(arg, items);
         if (items.All(i => i is Run))
-            return new Run(string.Concat(items.Cast<Run>().Select(r => r.Text)), new RunStyle(Sty.Plain));
+        {
+            var text = string.Concat(items.Cast<Run>().Select(r => r.Text));
+            var stripped = string.Concat(text.EnumerateRunes().Where(r => !SpaceTable.IsSpace(r.Value)).Select(r => r.ToString()));
+            return new Run(stripped, new RunStyle(Sty.Plain));
+        }
         return arg;
 
         static void Collect(FormulaNode node, List<FormulaNode> items)

@@ -6,7 +6,7 @@ namespace FormulaConvert.Tests;
 
 public class CatalogTests(ITestOutputHelper output)
 {
-    private static readonly string[] CategoryNames = ["Symbol", "Function", "Nary", "Accent", "Alias", "OutOfScope", "Structural"];
+    private static readonly string[] CategoryNames = ["Symbol", "Function", "Nary", "Accent", "Space", "Alias", "OutOfScope", "Structural"];
 
     private static List<string> Documented() =>
         CsvResource.ReadRows("mathlive-commands.txt").Select(r => r[0].Trim()).ToList();

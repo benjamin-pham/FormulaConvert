@@ -1,4 +1,5 @@
 using FormulaConvert.Ast;
+using FormulaConvert.Data;
 using FormulaConvert.Latex.Commands;
 
 namespace FormulaConvert.Latex;
@@ -72,10 +73,39 @@ internal static partial class LatexWriter
             b.Text("{");
             open++;
         }
-        foreach (var run in runs)
-            foreach (var rune in run.Text.EnumerateRunes())
-                WriteChar(rune, b);
+        var text = runs.Count == 1 ? runs[0].Text : string.Concat(runs.Select(r => r.Text));
+        WriteMathText(text, b);
         if (open > 0) b.Text(new string('}', open));
+    }
+
+    /// <summary>Writes math run text: pairs of U+2003 merge into <c>\qquad</c>, spaces become canonical commands, other characters go to <see cref="WriteChar"/>.</summary>
+    internal static void WriteMathText(string text, LatexBuilder b)
+    {
+        var runes = text.EnumerateRunes().ToList();
+        for (int i = 0; i < runes.Count; i++)
+        {
+            var rune = runes[i];
+            if (rune.Value == 0x2003)
+            {
+                if (i + 1 < runes.Count && runes[i + 1].Value == 0x2003)
+                {
+                    b.Command("\\qquad");
+                    i++;
+                }
+                else
+                {
+                    b.Command("\\quad");
+                }
+            }
+            else if (SpaceTable.TryGetCommand(rune.Value, out var command))
+            {
+                b.Command(command);
+            }
+            else
+            {
+                WriteChar(rune, b);
+            }
+        }
     }
 
     /// <summary>One character of normal text: special characters escaped, everything else literal.</summary>

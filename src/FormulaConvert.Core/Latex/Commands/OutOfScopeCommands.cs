@@ -25,8 +25,6 @@ internal static class OutOfScopeCommands
             OutOfScopeTable.TryGet(name, out var rule);
             t.Add(name, (p, n) => Handle(p, n, rule.Arity, rule.KeptArg));
         }
-        // `\,` cannot be a row of the comma-separated file
-        if (!t.Has("\\,")) t.Add("\\,", (p, n) => Handle(p, n, 0, -1));
     }
 
     private static FormulaNode Handle(LatexParser p, string name, int arity, int keptArg)
