@@ -23,4 +23,10 @@
     <ProjectReference Include="..\..\src\FormulaConvert.Cli\FormulaConvert.Cli.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Data\mathlive-defined.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

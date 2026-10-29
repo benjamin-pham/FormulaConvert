@@ -26,6 +26,7 @@ A shared internal AST serves both directions: `OmmlReader`/`LatexParser` → AST
 ## Rules
 
 - TDD: write the failing test first, then fix. Tests use the harness in `tests/FormulaConvert.Tests/Harness`; `CaseRunner` checks LaTeX→OMML, OMML→canonical LaTeX, and re-parsing the canonical form.
+- `LatexWriter` chỉ xuất lệnh có trong MathLive; lệnh chỉ để đọc thì liệt kê trong `not-in-mathlive.txt` (`MathLiveOutputTests`).
 - When adding or changing a LaTeX command, update the data tables and `CatalogTests` (every command in `mathlive-commands.txt` must belong to exactly one category).
 - OMML writer: keep it minimal (omit default properties) and follow the ECMA-376 element order. Never emit schema-invalid empty elements (`m:m`, `m:mr`, `m:eqArr`).
 - A `m:bar` without `m:pos` means underline; the writer always writes `m:pos` explicitly.

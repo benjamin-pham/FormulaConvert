@@ -2,7 +2,7 @@
 
 ## MathLive (MIT) - npm package `mathlive` 0.111.1
 
-Symbol and command data in `src/FormulaConvert.Core/Data/` is derived from MathLive.
+Symbol and command data in `src/FormulaConvert.Core/Data/` and `tests/FormulaConvert.Tests/Data/mathlive-defined.txt` is derived from MathLive 0.111.1 (npm bundle `https://registry.npmjs.org/mathlive/-/mathlive-0.111.1.tgz`, `package/mathlive.mjs`).
 
 ```text
 Copyright (c) 2017 - present Arno Gourdol. All rights reserved.

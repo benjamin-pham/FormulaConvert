@@ -193,7 +193,7 @@ public class NaryFunctionTests
     [InlineData("\\sech x", "sech")]
     [InlineData("\\csch x", "csch")]
     public void Hyperbolic_sech_and_csch(string latex, string name) =>
-        Check(latex, Fn(FName(name), R("x")));
+        Check(latex, Fn(FName(name), R("x")), $"\\operatorname{{{name}}}x");
 
     [Theory]
     [InlineData("\\intclockwise_C f", "∱")]

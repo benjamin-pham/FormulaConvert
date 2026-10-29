@@ -67,6 +67,14 @@ public class SymbolSweepTests
         if (cp < 0x80)
             return ch == "\\" ? "\\backslash" : "#$%&_{}".Contains(ch) ? "\\" + ch : ch;
         if (NaryTable.TryGetByChar(ch, out _)) return ch; // plain runs keep n-ary characters literal
-        return SymbolTable.TryGetCommand(cp, out var cmd) ? cmd : ch;
+        if (SymbolTable.TryGetCommand(cp, out var cmd)) return cmd;
+        if (SymbolTable.TryGetParseOnlyKind(cp, out var kind))
+            return kind switch
+            {
+                "rel" => $"\\mathrel{{{ch}}}",
+                "bin" => $"\\mathbin{{{ch}}}",
+                _ => ch,
+            };
+        return ch;
     }
 }

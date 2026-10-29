@@ -1,0 +1,25 @@
+# Commands MathLive does not define: parse-only in FormulaConvert.
+# command,kind (kind in: rel, bin, ord, fn, nary)
+\nequiv,rel
+\nsimeq,rel
+\napprox,rel
+\nasymp,rel
+\ntlg,rel
+\ntgl,rel
+\nsqsubseteq,rel
+\nsqsupseteq,rel
+\epar,rel
+\dlsh,rel
+\drsh,rel
+\leftwavearrow,rel
+\rightwavearrow,rel
+\dotminus,bin
+\iddots,ord
+\rightangle,ord
+\measuredrightangle,ord
+\varlrtriangle,ord
+\qed,ord
+\Euler,ord
+\P,ord
+\sech,fn
+\csch,fn

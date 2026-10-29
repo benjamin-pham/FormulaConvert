@@ -10,7 +10,7 @@ internal static partial class LatexWriter
     private static void WriteNary(Nary n, LatexBuilder b)
     {
         bool defaultSubSup = false;
-        if (NaryTable.TryGetByChar(n.Chr, out var info))
+        if (NaryTable.TryGetByChar(n.Chr, out var info) && !NotInMathLive.TryGetKind(info.Command, out _))
         {
             b.Command(info.Command);
             defaultSubSup = info.SubSupDefault;
@@ -64,7 +64,7 @@ internal static partial class LatexWriter
     /// </summary>
     private static void WriteFunctionName(string name, LatexBuilder b, bool starred = false)
     {
-        if (!starred && FunctionTable.Contains("\\" + name))
+        if (!starred && FunctionTable.Contains("\\" + name) && !NotInMathLive.TryGetKind(name, out _))
         {
             b.Command("\\" + name);
             return;

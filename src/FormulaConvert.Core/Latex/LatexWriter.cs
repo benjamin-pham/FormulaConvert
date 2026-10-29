@@ -111,6 +111,23 @@ internal static partial class LatexWriter
         {
             b.Command(command);
         }
+        else if (SymbolTable.TryGetParseOnlyKind(cp, out var kind))
+        {
+            if (kind == "rel")
+            {
+                b.Command("\\mathrel");
+                b.Text("{" + rune.ToString() + "}");
+            }
+            else if (kind == "bin")
+            {
+                b.Command("\\mathbin");
+                b.Text("{" + rune.ToString() + "}");
+            }
+            else
+            {
+                b.Text(rune.ToString());
+            }
+        }
         else
         {
             b.Text(rune.ToString());

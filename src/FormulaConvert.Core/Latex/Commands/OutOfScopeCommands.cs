@@ -32,7 +32,6 @@ internal static class OutOfScopeCommands
     private static FormulaNode Handle(LatexParser p, string name, int arity, int keptArg)
     {
         int at = p.Peek(-1).Position; // the command token, already consumed
-        p.Warn("out-of-scope", $"{name} is not supported by OMML", at);
         if (WithOptional.Contains(name)) p.ReadRawOptional();
         if (name == "\\hspace" && p.Peek() is { Kind: TokenKind.Char, Text: "*" }) p.Next();
         FormulaNode kept = FormulaRow.Empty;
@@ -42,6 +41,10 @@ internal static class OutOfScopeCommands
             if (i == keptArg) kept = p.ReadArgument();
             else raw = ReadRaw(p);
         }
+        bool suppressWarning = name is "\\mathrel" or "\\mathbin" && kept is Run r && r.Text.EnumerateRunes().Take(2).Count() == 1;
+        if (!suppressWarning)
+            p.Warn("out-of-scope", $"{name} is not supported by OMML", at);
+
         // \ce{H2O}: the chemical formula survives as normal text
         if (name is "\\ce" or "\\pu" && !string.IsNullOrEmpty(raw))
             return new Run(raw, new RunStyle(Normal: true));
