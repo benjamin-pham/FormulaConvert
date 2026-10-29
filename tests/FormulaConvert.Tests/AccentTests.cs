@@ -17,6 +17,9 @@ public class AccentTests
     private static string Gc(string chr, bool top, string e) =>
         $"<m:groupChr><m:groupChrPr><m:chr m:val=\"{chr}\"/><m:pos m:val=\"{(top ? "top" : "bot")}\"/></m:groupChrPr><m:e>{e}</m:e></m:groupChr>";
 
+    private static string GcV(string chr, bool top, string vertJc, string e) =>
+        $"<m:groupChr><m:groupChrPr><m:chr m:val=\"{chr}\"/><m:pos m:val=\"{(top ? "top" : "bot")}\"/><m:vertJc m:val=\"{vertJc}\"/></m:groupChrPr><m:e>{e}</m:e></m:groupChr>";
+
     private static string LU(string e, string lim) => $"<m:limUpp><m:e>{e}</m:e><m:lim>{lim}</m:lim></m:limUpp>";
 
     private static string LL(string e, string lim) => $"<m:limLow><m:e>{e}</m:e><m:lim>{lim}</m:lim></m:limLow>";
@@ -85,29 +88,41 @@ public class AccentTests
         Check("\\underset{b}{\\overset{a}{x}}", LL(LU(R("x"), R("a")), R("b")));
     [Fact] public void Overset_then_script() => Check("\\overset{a}{x}^2", SSup(LU(R("x"), R("a")), R("2")));
 
-    [Fact] public void Xrightarrow() => Check("\\xrightarrow{a}", LU(R("→"), R("a")));
+    [Fact] public void Xrightarrow() => Check("\\xrightarrow{a}", GcV("→", false, "top", R("a")));
     [Fact] public void Xrightarrow_below_and_above() =>
-        Check("\\xrightarrow[b]{a}", LU(LL(R("→"), R("b")), R("a")));
+        Check("\\xrightarrow[b]{a}", LL(GcV("→", false, "top", R("a")), R("b")));
     [Fact] public void Xleftarrow_empty_above_is_dropped() =>
-        Check("\\xleftarrow[b]{}", LL(R("←"), R("b")));
+        Check("\\xleftarrow[b]{}", GcV("←", true, "bot", R("b")));
     [Fact] public void Xlongequal() => Check("\\xlongequal{a}", LU(R("="), R("a")), "\\overset{a}{=}");
     [Fact] public void Overset_equals_round_trips() => Check("\\overset{a}{=}", LU(R("="), R("a")));
     [Fact] public void Stackrel_equals_is_overset() => Check("\\stackrel{a}{=}", LU(R("="), R("a")), "\\overset{a}{=}");
     [Fact] public void Overset_def_equals_round_trips() =>
         Check("\\overset{\\text{def}}{=}", LU(R("=") , "<m:r><m:rPr><m:nor/></m:rPr><m:t>def</m:t></m:r>"));
-    [Fact] public void XRightarrow() => Check("\\xRightarrow{a}", LU(R("⇒"), R("a")));
-    [Fact] public void Xmapsto() => Check("\\xmapsto{a}", LU(R("↦"), R("a")));
-    [Fact] public void Xtofrom() => Check("\\xtofrom{a}", LU(R("⇄"), R("a")));
-    [Fact] public void Xleftrightarrow() => Check("\\xleftrightarrow{a}", LU(R("↔"), R("a")));
-    [Fact] public void Xhookrightarrow() => Check("\\xhookrightarrow{a}", LU(R("↪"), R("a")));
+    [Fact] public void XRightarrow() => Check("\\xRightarrow{a}", GcV("⇒", false, "top", R("a")));
+    [Fact] public void Xmapsto() => Check("\\xmapsto{a}", GcV("↦", false, "top", R("a")));
+    [Fact] public void Xtofrom() => Check("\\xtofrom{a}", GcV("⇄", false, "top", R("a")));
+    [Fact] public void Xleftrightarrow() => Check("\\xleftrightarrow{a}", GcV("↔", false, "top", R("a")));
+    [Fact] public void Xhookrightarrow() => Check("\\xhookrightarrow{a}", GcV("↪", false, "top", R("a")));
     [Fact] public void Xrightarrow_with_complex_labels() =>
-        Check("\\xrightarrow[x+1]{\\alpha}", LU(LL(R("→"), R("x+1")), R("α")));
+        Check("\\xrightarrow[x+1]{\\alpha}", LL(GcV("→", false, "top", R("α")), R("x+1")));
     [Fact] public void Xrightarrow_missing_argument_throws() =>
         Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml("\\xrightarrow"));
     [Fact] public void Overset_on_non_arrow_base_with_arrow_char_among_text() =>
         Check("\\overset{a}{xy}", LU(R("xy"), R("a")));
     [Fact] public void Overset_on_arrow_with_empty_label_keeps_structure() =>
         Check("\\overset{}{\\rightarrow}", LU(R("→"), ""), "\\overset{}{\\rightarrow}");
+    [Fact] public void Overbrace_with_superscript_is_limUpp() =>
+        Check("\\overbrace{AB}^n", LU(Gc("⏞", true, R("AB")), R("n")));
+    [Fact] public void Underbrace_with_subscript_is_limLow() =>
+        Check("\\underbrace{AB}_{k+1}", LL(Gc("⏟", false, R("AB")), R("k+1")));
+    [Fact] public void Script_on_labeled_overbrace_is_braced() =>
+        Check("{\\overbrace{AB}^n}_k", $"<m:sSub><m:e>{LU(Gc("⏞", true, R("AB")), R("n"))}</m:e><m:sub>{R("k")}</m:sub></m:sSub>");
+    [Fact] public void Legacy_limUpp_arrow_still_reads_as_xrightarrow() =>
+        Assert.Equal("\\xrightarrow[b]{a}", FormulaConverter.OmmlToLatex(OMath(LU(LL(R("→"), R("b")), R("a")))).Output);
+    [Fact] public void Xrightarrow_below_with_close_bracket_is_braced() =>
+        Check("\\xrightarrow[{a]b}]{c}", LL(GcV("→", false, "top", R("c")), R("a]b")));
+    [Fact] public void Double_overbar_accent_reads_as_nested_overline() =>
+        Assert.Equal("\\overline{\\overline{x}}", FormulaConverter.OmmlToLatex(OMath(Ac("\u033F", R("x")))).Output);
 
     [Fact] public void Limit_function_name_still_writes_as_subscript() =>
         Check("\\lim_{x}f", "<m:func><m:fName>" + LL(R("lim", "<m:sty m:val=\"p\"/>"), R("x"))

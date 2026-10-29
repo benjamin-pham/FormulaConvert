@@ -53,6 +53,10 @@ internal static class ScriptParsing
                     sup = LatexParser.Rowify(primes);
                     break;
                 default:
+                    if (atom is GroupChar { Chr: "⏞", Top: true, VertJcTop: false } && sub == null && sup != null)
+                        return new Limit(atom, sup, true);
+                    if (atom is GroupChar { Chr: "⏟", Top: false, VertJcTop: false } && sub != null && sup == null)
+                        return new Limit(atom, sub, false);
                     return sub == null && sup == null ? atom : new Script(atom, sub, sup);
             }
         }

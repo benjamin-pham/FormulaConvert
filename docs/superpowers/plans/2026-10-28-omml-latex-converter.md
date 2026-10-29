@@ -370,7 +370,9 @@
 | `\overline{AB}` | `Br(top, AB)` | |
 | `\underline{AB}` | `Br(bot, AB)` | |
 | `\overbrace{AB}` | `Gc(⏞, top, AB)` | |
+| `\overbrace{AB}^n` | `LU(Gc(⏞, top, AB), n)` | |
 | `\underbrace{AB}` | `Gc(⏟, bot, AB)` | |
+| `\underbrace{AB}_n` | `LL(Gc(⏟, bot, AB), n)` | |
 | `\overparen{AB}`, `\wideparen{AB}` | `Gc(⏜, top)` | `\overparen{AB}` |
 | `\underparen{AB}` | `Gc(⏝, bot)` | |
 | `\underrightarrow{AB}` | `Gc(→, bot)` | |
@@ -379,13 +381,14 @@
 | `\overset{a}{x}`, `\stackrel{a}{x}` | `LU(x, a)` | `\overset{a}{x}` |
 | `\underset{b}{x}` | `LL(x, b)` | |
 | `\overunderset{a}{b}{x}` | `LU(LL(x,b), a)` | |
-| `\xrightarrow{a}` | `LU(R("→"), a)` | |
-| `\xrightarrow[b]{a}` | `LU(LL(R("→"), b), a)` | |
-| `\xleftarrow[b]{}` | `LL(R("←"), b)` (đối số trên rỗng bị bỏ) | `\xleftarrow[b]{}` |
-| `\xlongequal{a}`, `\xRightarrow{a}`, `\xmapsto{a}` | cơ sở `=`, `⇒`, `↦` | |
+| `\xrightarrow{a}` | `GcV(→, bot, top, a)` | |
+| `\xrightarrow[b]{a}` | `LL(GcV(→, bot, top, a), b)` | |
+| `\xleftarrow[b]{}` | `GcV(←, top, bot, b)` (đối số trên rỗng bị bỏ) | `\xleftarrow[b]{}` |
+| `\xlongequal{a}` | `LU(R("="), a)` | `\overset{a}{=}` |
+| `\xRightarrow{a}`, `\xmapsto{a}` | `GcV(⇒, bot, top, a)`, `GcV(↦, bot, top, a)` | |
 | `\hat` thiếu đối số | `FormulaParseException` | |
 
-  Quy tắc chung cho mọi `\x…`: ký tự mũi tên = codepoint của lệnh bỏ chữ `x` đầu (`\xrightarrow` → `\rightarrow`); ngoại lệ `\xlongequal` = `=`, `\xtofrom` = `\rightleftarrows`, `\xmapsto` = `\mapsto`. Writer: `Limit` có cơ sở là một ký tự mũi tên thuộc tập này (có thể lồng hai tầng) → `\x…[dưới]{trên}`, ngược lại → `\overset`/`\underset`/`\overunderset`. Các lệnh trong mục Extensible Accents không có ánh xạ trên (`\overgroup \undergroup \overlinesegment \underlinesegment \overarc \underarc \overleftharpoon \overrightharpoon \Overrightarrow \utilde`) sẽ được đưa vào `outofscope.csv` ở Task 12 (giữ nội dung, bỏ lệnh).
+  Quy tắc chung cho mọi `\x…`: ký tự mũi tên = codepoint của lệnh bỏ chữ `x` đầu (`\xrightarrow` → `\rightarrow`); ngoại lệ `\xlongequal` = `=`, `\xtofrom` = `\rightleftarrows`, `\xmapsto` = `\mapsto`. Word OMML biểu diễn mũi tên dãn bằng `<m:groupChr>` kèm `<m:vertJc>` (và `<m:limLow>` bao ngoài nếu có nhãn dưới). Writer: `GroupChar` có `vertJc` hoặc ký tự mũi tên thuộc tập này → `\x…[dưới]{trên}`; đồng thời vẫn hỗ trợ đọc `m:limUpp`/`m:limLow` cổ điển có cơ sở là mũi tên. Các dấu ngoặc ôm có nhãn (`\overbrace{x}^y`, `\underbrace{x}_y`) dùng `<m:limUpp>`/`<m:limLow>` bao quanh `<m:groupChr>`. Các lệnh trong mục Extensible Accents không có ánh xạ trên (`\overgroup \undergroup \overlinesegment \underlinesegment \overarc \underarc \overleftharpoon \overrightharpoon \Overrightarrow \utilde`) sẽ được đưa vào `outofscope.csv` ở Task 12 (giữ nội dung, bỏ lệnh).
 - [ ] **Step 2:** `dotnet test --filter AccentTests` → FAIL.
 - [ ] **Step 3: Implement** theo bảng; `\hat`-họ đọc một đối số.
 - [ ] **Step 4:** `dotnet test` → PASS.

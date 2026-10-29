@@ -53,10 +53,19 @@ internal static partial class LatexWriter
     {
         var flat = Flatten(node);
         if (flat.Count == 0) return;
-        if (flat.Count == 1 && flat[0] is not (Script or PreScript or Nary or FunctionApply) && (flat[0] is not Run r || RuneCount(r) == 1))
+        if (flat.Count == 1 && flat[0] is not (Script or PreScript or Nary or FunctionApply) && !IsLabeledBrace(flat[0]) && (flat[0] is not Run r || RuneCount(r) == 1))
             WriteNode(flat[0], b);
         else
             WriteGroup(node, b);
+    }
+
+    private static bool IsLabeledBrace(FormulaNode node)
+    {
+        if (node is not Limit lim) return false;
+        var baseNode = Flatten(lim.Base) is [var single] ? single : lim.Base;
+        return lim.Upper
+            ? baseNode is GroupChar { Chr: "⏞", Top: true, VertJcTop: false }
+            : baseNode is GroupChar { Chr: "⏟", Top: false, VertJcTop: false };
     }
 
     private static void WriteScriptArgument(FormulaNode node, LatexBuilder b)
@@ -118,17 +127,20 @@ internal static partial class LatexWriter
             items.Add(node);
     }
 
+    private static void WriteOptionalArgument(FormulaNode node, LatexBuilder b)
+    {
+        var inner = new LatexBuilder(b.Nesting);
+        WriteNode(node, inner);
+        var text = inner.ToString();
+        // A ] outside braces would end the optional argument early: brace the whole text.
+        b.Text(HasUnbracedCloseBracket(text) ? "[{" + text + "}]" : "[" + text + "]");
+    }
+
     private static void WriteRadical(Radical r, LatexBuilder b)
     {
         b.Command("\\sqrt");
         if (r.Degree != null)
-        {
-            var degree = new LatexBuilder(b.Nesting);
-            WriteNode(r.Degree, degree);
-            var text = degree.ToString();
-            // A ] outside braces would end the optional argument early: brace the whole degree.
-            b.Text(HasUnbracedCloseBracket(text) ? "[{" + text + "}]" : "[" + text + "]");
-        }
+            WriteOptionalArgument(r.Degree, b);
         WriteGroup(r.Body, b);
     }
 

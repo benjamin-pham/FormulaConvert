@@ -128,7 +128,7 @@ internal sealed record Accent(string Chr, FormulaNode Body) : FormulaNode;
 
 internal sealed record Bar(bool Top, FormulaNode Body) : FormulaNode;
 
-internal sealed record GroupChar(string Chr, bool Top, FormulaNode Body) : FormulaNode;
+internal sealed record GroupChar(string Chr, bool Top, FormulaNode Body, bool VertJcTop = false) : FormulaNode;
 
 internal sealed record Limit(FormulaNode Base, FormulaNode Lim, bool Upper) : FormulaNode;
 

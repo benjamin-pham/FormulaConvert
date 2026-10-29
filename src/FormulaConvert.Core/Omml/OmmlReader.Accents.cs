@@ -1,5 +1,6 @@
 using System.Xml.Linq;
 using FormulaConvert.Ast;
+using FormulaConvert.Latex.Commands;
 
 namespace FormulaConvert.Omml;
 
@@ -9,6 +10,8 @@ internal static partial class OmmlReader
     private static FormulaNode ReadAccent(XElement el, List<Diagnostic> d)
     {
         var chr = (string?)el.Element(M + "accPr")?.Element(M + "chr")?.Attribute(M + "val") ?? "̂";
+        if (chr == "\u033F")
+            return new Bar(true, new Bar(true, ReadContent(el.Element(M + "e"), d)));
         return new Accent(chr, ReadContent(el.Element(M + "e"), d));
     }
 
@@ -25,7 +28,10 @@ internal static partial class OmmlReader
         var pr = el.Element(M + "groupChrPr");
         var chr = (string?)pr?.Element(M + "chr")?.Attribute(M + "val") ?? "⏟";
         var pos = (string?)pr?.Element(M + "pos")?.Attribute(M + "val");
-        return new GroupChar(chr, pos == "top", ReadContent(el.Element(M + "e"), d));
+        var vertJc = (string?)pr?.Element(M + "vertJc")?.Attribute(M + "val");
+        bool top = pos == "top";
+        bool vertJcTop = (!top && vertJc == "top") || (top && vertJc == "bot" && OverUnderCommands.TryGetArrowCommand(chr, out _) && chr != "=");
+        return new GroupChar(chr, top, ReadContent(el.Element(M + "e"), d), vertJcTop);
     }
 
     /// <summary><c>m:limLow</c> / <c>m:limUpp</c> outside a function name.</summary>

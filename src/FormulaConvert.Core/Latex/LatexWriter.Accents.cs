@@ -28,6 +28,21 @@ internal static partial class LatexWriter
 
     private static void WriteGroupChar(GroupChar g, LatexBuilder b)
     {
+        if ((g.VertJcTop || AccentCommands.GroupChars.All(x => x.Chr != g.Chr || x.Top != g.Top)) && g.Chr != "=" && OverUnderCommands.TryGetArrowCommand(g.Chr, out var arrowCmd))
+        {
+            b.Command(arrowCmd);
+            if (g.Top)
+            {
+                WriteOptionalArgument(g.Body, b);
+                b.Text("{}");
+            }
+            else
+            {
+                WriteGroup(g.Body, b);
+            }
+            return;
+        }
+
         foreach (var (command, chr, top) in AccentCommands.GroupChars)
         {
             if (chr != g.Chr || top != g.Top) continue;
@@ -45,6 +60,28 @@ internal static partial class LatexWriter
     /// </summary>
     private static void WriteLimit(Limit l, LatexBuilder b)
     {
+        var baseNode = Flatten(l.Base) is [var single] ? single : l.Base;
+        if (l.Upper && baseNode is GroupChar { Chr: "⏞", Top: true, VertJcTop: false } ob && !IsEmpty(l.Lim))
+        {
+            WriteGroupChar(ob, b);
+            WriteScripts(null, l.Lim, b);
+            return;
+        }
+        if (!l.Upper && baseNode is GroupChar { Chr: "⏟", Top: false, VertJcTop: false } ub && !IsEmpty(l.Lim))
+        {
+            WriteGroupChar(ub, b);
+            WriteScripts(l.Lim, null, b);
+            return;
+        }
+        if (!l.Upper && baseNode is GroupChar { Top: false } ga && ga.Chr != "=" && OverUnderCommands.TryGetArrowCommand(ga.Chr, out var gcArrow) && (ga.VertJcTop || AccentCommands.GroupChars.All(x => x.Chr != ga.Chr)))
+        {
+            b.Command(gcArrow);
+            if (!IsEmpty(l.Lim))
+                WriteOptionalArgument(l.Lim, b);
+            WriteGroup(ga.Body, b);
+            return;
+        }
+
         FormulaNode? above = null, below = null;
         var core = l.Base;
         if (l.Upper)
@@ -68,9 +105,7 @@ internal static partial class LatexWriter
             b.Command(arrow);
             if (below != null && !IsEmpty(below))
             {
-                b.Text("[");
-                WriteNode(below, b);
-                b.Text("]");
+                WriteOptionalArgument(below, b);
             }
             WriteGroup(above ?? FormulaRow.Empty, b);
             return;

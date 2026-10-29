@@ -63,12 +63,25 @@ internal static class OverUnderCommands
         {
             t.Add(command, (p, n) =>
             {
-                FormulaNode result = LatexParser.CharRun(chr);
                 var below = p.ReadOptionalArgument();
                 var above = p.ReadArgument();
-                if (below != null) result = new Limit(result, below, false);
-                if (!IsEmpty(above)) result = new Limit(result, above, true);
-                return result;
+                if (chr == "=")
+                {
+                    FormulaNode result = LatexParser.CharRun(chr);
+                    if (below != null) result = new Limit(result, below, false);
+                    if (!IsEmpty(above)) result = new Limit(result, above, true);
+                    return result;
+                }
+
+                bool hasAbove = !IsEmpty(above);
+                bool hasBelow = below != null && !IsEmpty(below);
+                if (hasAbove && hasBelow)
+                    return new Limit(new GroupChar(chr, false, above, true), below!, false);
+                if (hasAbove)
+                    return new GroupChar(chr, false, above, true);
+                if (hasBelow)
+                    return new GroupChar(chr, true, below!, true);
+                return new Limit(LatexParser.CharRun(chr), FormulaRow.Empty, true);
             });
         }
     }

@@ -14,10 +14,13 @@ internal static partial class OmmlWriter
             new XElement(M + "barPr", new XElement(M + "pos", new XAttribute(M + "val", b.Top ? "top" : "bot"))),
             Element("e", b.Body));
 
-    private static XElement WriteGroupChar(GroupChar g) =>
-        new(M + "groupChr",
-            new XElement(M + "groupChrPr",
-                new XElement(M + "chr", new XAttribute(M + "val", g.Chr)),
-                new XElement(M + "pos", new XAttribute(M + "val", g.Top ? "top" : "bot"))),
-            Element("e", g.Body));
+    private static XElement WriteGroupChar(GroupChar g)
+    {
+        var pr = new XElement(M + "groupChrPr",
+            new XElement(M + "chr", new XAttribute(M + "val", g.Chr)),
+            new XElement(M + "pos", new XAttribute(M + "val", g.Top ? "top" : "bot")));
+        if (g.VertJcTop)
+            pr.Add(new XElement(M + "vertJc", new XAttribute(M + "val", g.Top ? "bot" : "top")));
+        return new XElement(M + "groupChr", pr, Element("e", g.Body));
+    }
 }
