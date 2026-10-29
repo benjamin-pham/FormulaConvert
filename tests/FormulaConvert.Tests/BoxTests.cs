@@ -72,6 +72,8 @@ public class BoxTests
     [Fact] public void Vphantom() => Check("\\vphantom{x}", Ph(["show", "zeroWid"], X));
     [Fact] public void Smash() => Check("\\smash{x}", Ph(["zeroAsc", "zeroDesc"], X));
     [Fact] public void Smash_optional_argument_is_dropped() => Check("\\smash[b]{x}", Ph(["zeroAsc", "zeroDesc"], X), "\\smash{x}");
+    [Fact] public void Mathrlap() => Check("\\mathrlap{x}", Ph(["zeroWid"], X));
+    [Fact] public void Rlap() => Check("\\rlap{x}", Ph(["zeroWid"], X), "\\mathrlap{x}");
     [Fact] public void Phantom_all_zero() => Check("\\hphantom{\\vphantom{x}}", Ph(["show", "zeroAsc", "zeroDesc"], Ph(["show", "zeroWid"], X)));
     [Fact] public void Box_in_row() => Check("a\\boxed{x}b", R("a") + Bb([], X) + R("b"));
 
@@ -116,8 +118,46 @@ public class BoxTests
     [Fact]
     public void Writer_shown_phantom_without_a_command_is_the_body()
     {
-        var omml = Wrap($"<m:phant><m:phantPr><m:zeroWid m:val=\"1\"/></m:phantPr><m:e>{X}</m:e></m:phant>");
-        Assert.Equal("x", FormulaConverter.OmmlToLatex(omml).Output);
+        var omml = Wrap($"<m:phant><m:e>{X}</m:e></m:phant>");
+        var r = FormulaConverter.OmmlToLatex(omml);
+        Assert.Equal("x", r.Output);
+        Assert.Empty(r.Diagnostics);
+    }
+
+    [Fact]
+    public void Reader_shown_phantom_with_zeroAsc_degrades_to_content_with_lossy()
+    {
+        var omml = Wrap($"<m:phant><m:phantPr><m:zeroAsc m:val=\"1\"/></m:phantPr><m:e>{X}</m:e></m:phant>");
+        var r = FormulaConverter.OmmlToLatex(omml);
+        Assert.Equal("x", r.Output);
+        Assert.Equal("lossy", Assert.Single(r.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Reader_hidden_phantom_with_zeroWid_and_zeroAsc_degrades_to_phantom_with_lossy()
+    {
+        var omml = Wrap(Ph(["show", "zeroWid", "zeroAsc"], X));
+        var r = FormulaConverter.OmmlToLatex(omml);
+        Assert.Equal("\\phantom{x}", r.Output);
+        Assert.Equal("lossy", Assert.Single(r.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Reader_shown_phantom_all_zeros_degrades_to_content_with_lossy()
+    {
+        var omml = Wrap(Ph(["zeroWid", "zeroAsc", "zeroDesc"], X));
+        var r = FormulaConverter.OmmlToLatex(omml);
+        Assert.Equal("x", r.Output);
+        Assert.Equal("lossy", Assert.Single(r.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Reader_hidden_phantom_all_zeros_degrades_to_phantom_with_lossy()
+    {
+        var omml = Wrap(Ph(["show", "zeroWid", "zeroAsc", "zeroDesc"], X));
+        var r = FormulaConverter.OmmlToLatex(omml);
+        Assert.Equal("\\phantom{x}", r.Output);
+        Assert.Equal("lossy", Assert.Single(r.Diagnostics).Code);
     }
 
     [Theory]

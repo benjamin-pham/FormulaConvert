@@ -34,7 +34,18 @@ internal static partial class OmmlReader
     private static FormulaNode ReadPhantom(XElement el, List<Diagnostic> d)
     {
         var pr = el.Element(M + "phantPr");
-        return new Phantom(ReadOnOff(pr, "show", true), ReadOnOff(pr, "zeroWid", false), ReadOnOff(pr, "zeroAsc", false),
-            ReadOnOff(pr, "zeroDesc", false), ReadContent(el.Element(M + "e"), d));
+        bool show = ReadOnOff(pr, "show", true);
+        bool zeroWid = ReadOnOff(pr, "zeroWid", false);
+        bool zeroAsc = ReadOnOff(pr, "zeroAsc", false);
+        bool zeroDesc = ReadOnOff(pr, "zeroDesc", false);
+
+        bool isCanonical = (!zeroWid && !zeroAsc && !zeroDesc)
+            || (!zeroWid && zeroAsc && zeroDesc)
+            || (zeroWid && !zeroAsc && !zeroDesc);
+
+        if (!isCanonical)
+            d.Add(new Diagnostic("lossy", $"phantom shape is not directly representable in LaTeX; degraded to {(show ? "content" : "\\phantom")}", -1));
+
+        return new Phantom(show, zeroWid, zeroAsc, zeroDesc, ReadContent(el.Element(M + "e"), d));
     }
 }

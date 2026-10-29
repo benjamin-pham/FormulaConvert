@@ -46,10 +46,12 @@ internal static partial class LatexWriter
     private static void WritePhantom(Phantom ph, LatexBuilder bld)
     {
         string? command = !ph.Show
-            ? ph.ZeroAscent && ph.ZeroDescent && !ph.ZeroWidth ? "\\hphantom"
+            ? !ph.ZeroWidth && ph.ZeroAscent && ph.ZeroDescent ? "\\hphantom"
             : ph.ZeroWidth && !ph.ZeroAscent && !ph.ZeroDescent ? "\\vphantom"
             : "\\phantom"
-            : ph.ZeroAscent && ph.ZeroDescent ? "\\smash" : null;
+            : !ph.ZeroWidth && ph.ZeroAscent && ph.ZeroDescent ? "\\smash"
+            : ph.ZeroWidth && !ph.ZeroAscent && !ph.ZeroDescent ? "\\mathrlap"
+            : null;
         if (command == null)
         {
             WriteNode(ph.Body, bld);

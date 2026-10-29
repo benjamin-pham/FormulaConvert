@@ -31,6 +31,8 @@ internal static class BoxCommands
         t.Add("\\phantom", (p, n) => new Phantom(false, false, false, false, p.ReadArgument()));
         t.Add("\\hphantom", (p, n) => new Phantom(false, false, true, true, p.ReadArgument()));
         t.Add("\\vphantom", (p, n) => new Phantom(false, true, false, false, p.ReadArgument()));
+        t.Add("\\mathrlap", (p, n) => new Phantom(true, true, false, false, p.ReadArgument()));
+        t.Add("\\rlap", (p, n) => new Phantom(true, true, false, false, p.ReadArgument()));
         t.Add("\\smash", (p, n) =>
         {
             p.ReadRawOptional(); // [t] / [b] only changes which side is smashed; the canonical form smashes both

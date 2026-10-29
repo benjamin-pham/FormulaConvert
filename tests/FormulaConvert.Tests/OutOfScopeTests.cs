@@ -50,7 +50,6 @@ public class OutOfScopeTests
     [InlineData("\\utilde{AB}", "AB")]
     [InlineData("\\overarc{AB}", "AB")]
     [InlineData("\\Overrightarrow{AB}", "AB")]
-    [InlineData("\\rlap{x}", "x")]
     [InlineData("\\mathllap{x}", "x")]
     [InlineData("\\fbox{x}", "x")]
     [InlineData("\\raisebox{1em}{x}", "x")]
