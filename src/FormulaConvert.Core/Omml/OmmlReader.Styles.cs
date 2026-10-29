@@ -57,6 +57,29 @@ internal static partial class OmmlReader
         }
 
         var baseStyle = new RunStyle(explicitSty ?? Sty.Italic, explicitScr ?? Scr.Roman);
+
+        var decodedRunes = new List<(string Text, RunStyle Style, bool IsPrime)>();
+        foreach (var rune in text.EnumerateRunes())
+        {
+            bool isPrime = rune.Value is 0x2032 or 0x2033 or 0x2034;
+            if (isPrime)
+            {
+                decodedRunes.Add((rune.ToString(), baseStyle, true));
+            }
+            else if (rune.Value == '\u2212')
+            {
+                decodedRunes.Add(("-", baseStyle, false));
+            }
+            else if (MathAlphaDecoder.TryDecode(rune, out var ascii, out var decodedStyle))
+            {
+                decodedRunes.Add((ascii.ToString(), new RunStyle(explicitSty ?? decodedStyle.Sty, explicitScr ?? decodedStyle.Scr), false));
+            }
+            else
+            {
+                decodedRunes.Add((rune.ToString(), baseStyle, false));
+            }
+        }
+
         var runBuffer = new System.Text.StringBuilder();
         RunStyle? currentStyle = null;
 
@@ -66,37 +89,37 @@ internal static partial class OmmlReader
             {
                 items.Add(new Run(runBuffer.ToString(), currentStyle));
                 runBuffer.Clear();
+                currentStyle = null;
             }
         }
 
-        foreach (var rune in text.EnumerateRunes())
+        for (int i = 0; i < decodedRunes.Count; i++)
         {
-            string chText;
-            RunStyle chStyle;
-
-            if (rune.Value == '\u2212')
+            var cur = decodedRunes[i];
+            if (!cur.IsPrime && i + 1 < decodedRunes.Count && decodedRunes[i + 1].IsPrime)
             {
-                chText = "-";
-                chStyle = baseStyle;
-            }
-            else if (MathAlphaDecoder.TryDecode(rune, out var ascii, out var decodedStyle))
-            {
-                chText = ascii.ToString();
-                chStyle = new RunStyle(explicitSty ?? decodedStyle.Sty, explicitScr ?? decodedStyle.Scr);
+                Flush();
+                var primeBuffer = new System.Text.StringBuilder();
+                int j = i + 1;
+                while (j < decodedRunes.Count && decodedRunes[j].IsPrime)
+                {
+                    primeBuffer.Append(decodedRunes[j].Text);
+                    j++;
+                }
+                var baseRun = new Run(cur.Text, cur.Style);
+                var supRun = new Run(primeBuffer.ToString(), baseStyle);
+                items.Add(new Script(baseRun, null, supRun));
+                i = j - 1;
             }
             else
             {
-                chText = rune.ToString();
-                chStyle = baseStyle;
+                if (currentStyle != null && currentStyle != cur.Style)
+                {
+                    Flush();
+                }
+                currentStyle = cur.Style;
+                runBuffer.Append(cur.Text);
             }
-
-            if (currentStyle != null && currentStyle != chStyle)
-            {
-                Flush();
-            }
-
-            currentStyle = chStyle;
-            runBuffer.Append(chText);
         }
 
         Flush();

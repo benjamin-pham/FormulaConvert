@@ -45,11 +45,15 @@ public class AccentTests
     public void Accent_commands(string command, string chr) =>
         Check(command + "{x}", Ac(chr, R("x")));
 
-    [Fact] public void Widehat() => Check("\\widehat{ABC}", Ac("̂", R("ABC")), "\\hat{ABC}");
-    [Fact] public void Widetilde() => Check("\\widetilde{ABC}", Ac("̃", R("ABC")), "\\tilde{ABC}");
-    [Fact] public void Widecheck() => Check("\\widecheck{ABC}", Ac("̌", R("ABC")), "\\check{ABC}");
-    [Fact] public void Overrightarrow() => Check("\\overrightarrow{AB}", Ac("⃗", R("AB")), "\\vec{AB}");
+    [Fact] public void Widehat() => Check("\\widehat{AB}", Ac("̂", R("AB")));
+    [Fact] public void Widetilde() => Check("\\widetilde{AB}", Ac("̃", R("AB")));
+    [Fact] public void Widecheck() => Check("\\widecheck{AB}", Ac("̌", R("AB")));
+    [Fact] public void Overrightarrow() => Check("\\overrightarrow{AB}", Ac("⃗", R("AB")));
     [Fact] public void Overleftarrow() => Check("\\overleftarrow{AB}", Ac("⃖", R("AB")));
+    [Fact] public void Hat_multiletter_canonical() => Check("\\hat{AB}", Ac("̂", R("AB")), "\\widehat{AB}");
+    [Fact] public void Vec_multiletter_canonical() => Check("\\vec{AB}", Ac("⃗", R("AB")), "\\overrightarrow{AB}");
+    [Fact] public void Tilde_multiletter_canonical() => Check("\\tilde{AB}", Ac("̃", R("AB")), "\\widetilde{AB}");
+    [Fact] public void Check_multiletter_canonical() => Check("\\check{AB}", Ac("̌", R("AB")), "\\widecheck{AB}");
     [Fact] public void Overleftrightarrow() => Check("\\overleftrightarrow{AB}", Ac("⃡", R("AB")));
     [Fact] public void Accent_single_atom_argument() => Check("\\hat x", Ac("̂", R("x")), "\\hat{x}");
     [Fact] public void Accent_then_script() => Check("\\hat{x}^2", SSup(Ac("̂", R("x")), R("2")));
@@ -78,6 +82,10 @@ public class AccentTests
         Assert.Equal("\\underline{x}", FormulaConverter.OmmlToLatex(OMath($"<m:bar><m:e>{R("x")}</m:e></m:bar>")).Output);
     [Fact] public void Bar_with_empty_properties_reads_as_underline() =>
         Assert.Equal("\\underline{x}", FormulaConverter.OmmlToLatex(OMath($"<m:bar><m:barPr/><m:e>{R("x")}</m:e></m:bar>")).Output);
+    [Fact] public void Accent_overbar_reads_as_overline() =>
+        Assert.Equal("\\overline{AB}", FormulaConverter.OmmlToLatex(OMath(Ac("\u0305", R("AB")))).Output);
+    [Fact] public void Accent_underbar_reads_as_underline() =>
+        Assert.Equal("\\underline{x}", FormulaConverter.OmmlToLatex(OMath(Ac("\u0332", R("x")))).Output);
 
     [Fact] public void Overset() => Check("\\overset{a}{x}", LU(R("x"), R("a")));
     [Fact] public void Stackrel() => Check("\\stackrel{a}{x}", LU(R("x"), R("a")), "\\overset{a}{x}");

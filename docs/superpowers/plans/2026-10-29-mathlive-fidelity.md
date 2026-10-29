@@ -229,7 +229,7 @@
 - Modify: `Latex/LatexWriter.Accents.cs` (`WriteAccent`), `Omml/OmmlReader.Accents.cs` (`ReadAccent`), `Omml/OmmlReader.Styles.cs` (`ReadRun`)
 - Test: `tests/FormulaConvert.Tests/AccentTests.cs`, `tests/FormulaConvert.Tests/ScriptTests.cs`
 
-- [ ] **Step 1: Viết test đỏ:**
+- [x] **Step 1: Viết test đỏ:**
   - `Check("\\widehat{AB}", Ac("̂", R("AB")))`, và tương tự cho `\widetilde{AB}`, `\widecheck{AB}`, `\overrightarrow{AB}`, `\overleftarrow{AB}`.
   - `\hat{x}` và `\vec{x}` giữ nguyên; `\hat{AB}` có Canonical `\widehat{AB}`.
   - OMML `Ac("\u0305", R("AB"))` → `\overline{AB}`; `Ac("\u0332", R("x"))` → `\underline{x}`.
@@ -237,10 +237,10 @@
     - OMML `R("f′(x)")` → `f^{\prime}(x)`;
     - OMML `R("g″")` → `g^{\prime\prime}`;
     - OMML `R("′")` đứng một mình → `\prime`.
-- [ ] **Step 2: Chạy** `dotnet test --filter "AccentTests|ScriptTests"`. Kết quả mong đợi: FAIL.
-- [ ] **Step 3: Cài đặt** theo D6 trong spec. "Nhiều hơn một ký tự" nghĩa là `Flatten(body)` có hơn một mục, hoặc một `Run` có hơn một `Rune`. Trong `ReadRun` (run toán, không `m:nor`), một dãy `′″‴` ngay sau một `Rune` khác thành `Script(Run(rune trước), null, Run(dãy prime))`; chuỗi `″` được giữ nguyên trong chỉ số trên.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Cập nhật "Quy ước".
-- [ ] **Step 5: Commit** `fix: use wide accents for multi-letter bodies and read Word overbars and primes`.
+- [x] **Step 2: Chạy** `dotnet test --filter "AccentTests|ScriptTests"`. Kết quả mong đợi: FAIL.
+- [x] **Step 3: Cài đặt** theo D6 trong spec. "Nhiều hơn một ký tự" nghĩa là `Flatten(body)` có hơn một mục, hoặc một `Run` có hơn một `Rune`. Trong `ReadRun` (run toán, không `m:nor`), một dãy `′″‴` ngay sau một `Rune` khác thành `Script(Run(rune trước), null, Run(dãy prime))`; chuỗi `″` được giữ nguyên trong chỉ số trên.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Cập nhật "Quy ước".
+- [x] **Step 5: Commit** `fix: use wide accents for multi-letter bodies and read Word overbars and primes`.
 
 ### Task 7: Điểm căn hàng `m:aln`, `eqnarray`, `m:brk`
 

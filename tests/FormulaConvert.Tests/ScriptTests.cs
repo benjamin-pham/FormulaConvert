@@ -51,6 +51,29 @@ public class ScriptTests
     public void Reader_double_prime_char_is_two_primes() =>
         Assert.Equal("f^{\\prime\\prime}", FormulaConverter.OmmlToLatex(OMath(SSup(R("f"), R("″")))).Output);
 
+    [Fact]
+    public void Math_run_prime_after_letter_splits_into_script() =>
+        Assert.Equal("f^{\\prime}(x)", FormulaConverter.OmmlToLatex(OMath(R("f′(x)"))).Output);
+
+    [Fact]
+    public void Math_run_double_prime_splits_into_script() =>
+        Assert.Equal("g^{\\prime\\prime}", FormulaConverter.OmmlToLatex(OMath(R("g″"))).Output);
+
+    [Fact]
+    public void Math_run_isolated_prime_reads_as_prime() =>
+        Assert.Equal("\\prime", FormulaConverter.OmmlToLatex(OMath(R("′"))).Output);
+
+    [Fact]
+    public void Math_run_triple_prime_splits_into_script() =>
+        Assert.Equal("h^{\\prime\\prime\\prime}", FormulaConverter.OmmlToLatex(OMath(R("h‴"))).Output);
+
+    [Fact]
+    public void Normal_run_with_prime_does_not_split()
+    {
+        var omml = OMath("<m:r><m:rPr><m:nor/></m:rPr><m:t>f′(x)</m:t></m:r>");
+        Assert.Equal("\\text{f′(x)}", FormulaConverter.OmmlToLatex(omml).Output);
+    }
+
     [Fact] public void Prefix_script() => Check("{}_a^b x", SPre(R("a"), R("b"), R("x")));
     [Fact] public void Prefix_script_does_not_swallow_nonempty_group_script() =>
         Check("{}_a{xy}^2z", SPre(R("a"), "", SSup(R("xy"), R("2"))) + R("z"), "{}_a{xy}^2 z");

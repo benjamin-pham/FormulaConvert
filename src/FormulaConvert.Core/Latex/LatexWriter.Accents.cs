@@ -9,8 +9,26 @@ internal static partial class LatexWriter
     /// <summary>An accent as its command; a character without a command falls back to <c>\overset{chr}{body}</c>.</summary>
     private static void WriteAccent(Accent a, LatexBuilder b)
     {
-        string? command = AccentTable.TryGetByChar(a.Chr, out var c) ? c
-            : AccentCommands.ExtraAccents.FirstOrDefault(x => x.Chr == a.Chr).Command;
+        string? command;
+        if (IsMultiLetter(a.Body))
+        {
+            command = a.Chr switch
+            {
+                "̂" => "\\widehat",
+                "̃" => "\\widetilde",
+                "̌" => "\\widecheck",
+                "⃗" => "\\overrightarrow",
+                "⃖" => "\\overleftarrow",
+                _ => AccentTable.TryGetByChar(a.Chr, out var c) ? c
+                    : AccentCommands.ExtraAccents.FirstOrDefault(x => x.Chr == a.Chr).Command
+            };
+        }
+        else
+        {
+            command = AccentTable.TryGetByChar(a.Chr, out var c) ? c
+                : AccentCommands.ExtraAccents.FirstOrDefault(x => x.Chr == a.Chr).Command;
+        }
+
         if (command == null)
         {
             WriteOverUnder("\\overset", WriteText(a.Chr), a.Body, b);
@@ -18,6 +36,14 @@ internal static partial class LatexWriter
         }
         b.Command(command);
         WriteGroup(a.Body, b);
+    }
+
+    private static bool IsMultiLetter(FormulaNode body)
+    {
+        var flat = Flatten(body);
+        if (flat.Count > 1) return true;
+        if (flat.Count == 1 && flat[0] is Run run && run.Text.EnumerateRunes().Take(2).Count() > 1) return true;
+        return false;
     }
 
     private static void WriteBar(Bar bar, LatexBuilder b)

@@ -106,6 +106,7 @@ internal static partial class LatexWriter
             {
                 if (c == '′') count++;
                 else if (c == '″') count += 2;
+                else if (c == '‴') count += 3;
                 else return false;
             }
         }

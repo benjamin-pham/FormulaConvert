@@ -12,6 +12,10 @@ internal static partial class OmmlReader
         var chr = (string?)el.Element(M + "accPr")?.Element(M + "chr")?.Attribute(M + "val") ?? "̂";
         if (chr == "\u033F")
             return new Bar(true, new Bar(true, ReadContent(el.Element(M + "e"), d)));
+        if (chr == "\u0305")
+            return new Bar(true, ReadContent(el.Element(M + "e"), d));
+        if (chr == "\u0332")
+            return new Bar(false, ReadContent(el.Element(M + "e"), d));
         return new Accent(chr, ReadContent(el.Element(M + "e"), d));
     }
 

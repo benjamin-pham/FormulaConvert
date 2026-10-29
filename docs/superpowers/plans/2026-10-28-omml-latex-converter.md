@@ -35,7 +35,8 @@
 - **Khoảng trắng hai chiều:** các lệnh khoảng trắng LaTeX (`\,`, `\:`, `\>`, `\;`, `\quad`, `\qquad`, `\enspace`, `\enskip`, `\ `, `~`, `\space`, `\nobreakspace`) ánh xạ sang ký tự khoảng trắng Unicode trong `m:t` (U+2009, U+2005, U+2004, U+2003, U+2002, U+00A0); `\!` không có trong OMML nên bị bỏ kèm cảnh báo `lossy`. Chiều ngược lại: U+2009/U+2006/U+200A ra `\,`, U+2005/U+205F ra `\:`, U+2004 ra `\;`, hai U+2003 liên tiếp ra `\qquad`, một U+2003 ra `\quad`, U+2002 ra `\enspace`, U+00A0/U+0020 ra `\ `; trong `\text{…}` (`m:nor`) giữ nguyên ký tự văn bản trần.
 - **Toán hạng** của `Nary` và `FunctionApply` là **atom kế tiếp** (nhóm `{…}`, một ký tự, hoặc một lệnh kèm chỉ số gắn liền); riêng đối số hàm bắt đầu bằng `(` hoặc `[` kéo dài đến ký tự đóng tương ứng. Writer bọc `{}` khi toán hạng nhiều mục (trừ đối số hàm là một chuỗi `Run` mở bằng `(` và đóng bằng `)`, ví dụ `\sin(x)`), nên parse lại ổn định.
 - `\binom` ↔ `Delimited("(", ")", "", [Frac(…, NoBar)])`; `\atop` ↔ `Frac NoBar`; `\choose` ↔ `\binom`; `\nicefrac` ↔ `Frac Skw` (`m:type="skw"`); `Frac Lin` (`m:type="lin"`, chỉ đọc từ OMML) xuất `n/d` kèm một cảnh báo `lossy` ở reader, mỗi vế bọc `{}` trừ khi là một `Run` đúng một `Rune`; phân số `Lin` không phải atom: làm cơ số chỉ số hay toán hạng thì cả cụm được bọc `{}` (`{a/b}^2`, `\sum{a/b}`).
-- Dấu `'` ↔ chỉ số trên `\prime` (U+2032); writer ra `^{\prime}`.
+- Dấu `'` ↔ chỉ số trên `\prime` (U+2032); writer ra `^{\prime}`. Trong `ReadRun` (run toán, không `m:nor`), dãy ký tự `′`/`″`/`‴` đứng ngay sau một `Rune` khác được tách thành `Script(Run(rune trước), null, Run(dãy prime))` (`f′(x)` → `f^{\prime}(x)`, `g″` → `g^{\prime\prime}`); `′` đứng riêng giữ nguyên là `\prime`.
+- **Dấu phụ rộng và dấu gạch của Word:** `\hat`/`\tilde`/`\check`/`\vec` với thân nhiều hơn một ký tự (`Flatten(body)` có hơn một mục hoặc một `Run` có hơn một `Rune`) xuất `\widehat`/`\widetilde`/`\widecheck`/`\overrightarrow`; U+20D6 thân nhiều ký tự xuất `\overleftarrow`. Thân đúng một ký tự giữ `\hat{x}`, `\vec{x}`… Reader chuyển `m:acc` với U+0305 thành `\overline` (`Bar(top: true)`), với U+0332 thành `\underline` (`Bar(top: false)`).
 - **Kiểu chữ script:** `scr="script"` xuất `\mathscr` (dạng chuẩn của MathLive; `\mathcal` vẫn được đọc sang `scr="script"`).
 - Ký tự `&` trong `align`/`gather`… giữ nguyên là `Run("&")` bên trong hàng của `EqArray` (đúng cách OMML đánh dấu điểm căn).
 - `Delimited` mất cỡ của `\bigl(` (ra ký tự trần, kèm cảnh báo `lossy`).
@@ -368,8 +369,8 @@
 | `\hat{x}`, `\tilde{x}`, `\vec{v}`, `\dot{x}`, `\ddot{x}`, `\bar{x}`, `\check{x}`, `\breve{x}`, `\mathring{x}` | `Ac(chr từ accents.csv, …)` | |
 | `\dddot{x}`, `\ddddot{x}` | `Ac(U+20DB / U+20DC)` | |
 | `\acute{e}`, `\grave{e}` | `Ac(U+0301 / U+0300)` | |
-| `\widehat{ABC}`, `\widetilde{ABC}`, `\widecheck{ABC}` | như `\hat` | `\hat{ABC}`, `\tilde{ABC}`, `\check{ABC}` |
-| `\overrightarrow{AB}`, `\overleftarrow{AB}`, `\overleftrightarrow{AB}` | `Ac(U+20D7 / U+20D6 / U+20E1)` | `\vec{AB}` cho phải; hai cái còn lại giữ tên |
+| `\widehat{AB}`, `\widetilde{AB}`, `\widecheck{AB}` | như `\hat` | |
+| `\overrightarrow{AB}`, `\overleftarrow{AB}`, `\overleftrightarrow{AB}` | `Ac(U+20D7 / U+20D6 / U+20E1)` | |
 | `\overline{AB}` | `Br(top, AB)` | |
 | `\underline{AB}` | `Br(bot, AB)` | |
 | `\overbrace{AB}` | `Gc(⏞, top, AB)` | |
