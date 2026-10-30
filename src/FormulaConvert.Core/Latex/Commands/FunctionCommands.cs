@@ -25,6 +25,14 @@ internal static class FunctionCommands
             bool limits = starred || name is Run r && FunctionTable.BoundsFunctions.Contains("\\" + r.Text);
             return ParseFunction(p, name, limits);
         });
+        t.Add("\\operatorname*", (p, n) =>
+        {
+            int pos = p.Position;
+            if (p.Peek().Kind != TokenKind.BeginGroup) throw p.Error("expected {");
+            var name = OperatorName(p.ReadArgument());
+            if (name is Run { Text.Length: 0 }) throw p.Error("empty function name", pos);
+            return ParseFunction(p, name, true);
+        });
     }
 
     /// <summary>The argument of <c>\operatorname</c>, parsed as math: its runs joined into one upright run (other content kept, spaces dropped).</summary>

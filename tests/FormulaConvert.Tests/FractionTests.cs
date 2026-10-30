@@ -59,9 +59,15 @@ public class FractionTests
     [Fact] public void Empty_frac() => Check("\\frac{}{}", F("", ""));
     [Fact] public void Nested_frac() => Check("\\frac{a}{\\frac{b}{c}}", F(R("a"), F(R("b"), R("c"))));
 
+    [Fact]
+    public void Genfrac_binomial() =>
+        Check("\\genfrac{(}{)}{0pt}{}{a}{b}", D(F(R("a"), R("b"), "noBar")), "\\binom{a}{b}");
+
+    [Fact]
+    public void Overwithdelims_binomial() =>
+        Check("{a \\atopwithdelims ( ) b}", D(F(R("a"), R("b"), "noBar")), "\\binom{a}{b}");
+
     [Theory]
-    [InlineData("\\overwithdelims", 0)]
-    [InlineData("a \\atopwithdelims b", 2)]
     [InlineData("a \\over b \\over c", 10)]
     [InlineData("\\frac{a}", 8)]
     public void Unsupported_or_malformed_throws(string latex, int position)

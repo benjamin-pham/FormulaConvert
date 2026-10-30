@@ -174,4 +174,12 @@ public class DelimiterTests
         var omml = FormulaConverter.LatexToOmml("\\sum\\left(x\\right)").Output;
         Assert.Equal("\\sum\\left(x\\right)", FormulaConverter.OmmlToLatex(omml).Output);
     }
+
+    [Fact]
+    public void Bra_macro()
+    {
+        var res = FormulaConverter.LatexToOmml("\\bra{x}");
+        Assert.Empty(res.Diagnostics);
+        Assert.Equal(OMath(R("⟨x|")), res.Output);
+    }
 }

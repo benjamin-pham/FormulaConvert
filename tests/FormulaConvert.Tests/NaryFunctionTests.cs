@@ -201,4 +201,15 @@ public class NaryFunctionTests
     [InlineData("\\ointctrclockwise_C f", "∳")]
     public void Oriented_integrals_are_nary(string latex, string chr) =>
         Check(latex, N(chr, R("C"), null, R("f")));
+
+    [Fact]
+    public void Deg_function() => Check("\\deg x", Fn(FName("deg"), R("x")));
+
+    [Fact]
+    public void Bmod_macro()
+    {
+        var res = FormulaConverter.LatexToOmml("a\\bmod b");
+        Assert.Empty(res.Diagnostics);
+        Assert.True(SameXml(OMath("<m:r><m:t xml:space=\"preserve\">a\u2004</m:t></m:r>" + R("mod", Plain) + "<m:r><m:t xml:space=\"preserve\">\u2004b</m:t></m:r>"), res.Output));
+    }
 }

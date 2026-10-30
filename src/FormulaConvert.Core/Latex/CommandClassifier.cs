@@ -16,7 +16,7 @@ internal static class CommandClassifier
         if (SpaceTable.Has(command)) result.Add("Space");
         if (AliasTable.TryGet(command, out _)) result.Add("Alias");
         if (OutOfScopeTable.TryGet(command, out _)) result.Add("OutOfScope");
-        if (CommandTable.Default.Has(command)) result.Add("Structural");
+        if (result.Count == 0 && CommandTable.Default.Has(command)) result.Add("Structural");
         return result;
     }
 }

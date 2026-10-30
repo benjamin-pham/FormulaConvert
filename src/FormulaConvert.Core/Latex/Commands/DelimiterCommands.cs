@@ -14,7 +14,9 @@ internal static class DelimiterCommands
     public static void Register(CommandTable t)
     {
         t.Add("\\left", Left);
+        t.Add("\\mleft", Left);
         t.Add("\\right", (p, name) => throw p.Error("\\right without matching \\left", p.Peek(-1).Position));
+        t.Add("\\mright", (p, name) => throw p.Error("\\mright without matching \\mleft", p.Peek(-1).Position));
         t.Add("\\middle", (p, name) => throw p.Error("\\middle outside \\left … \\right", p.Peek(-1).Position));
         foreach (var size in new[] { "big", "Big", "bigg", "Bigg" })
         {
@@ -46,13 +48,13 @@ internal static class DelimiterCommands
                     p.Warn("lossy", $"\\middle delimiters differ; only the first ({Show(separator)}) is kept", t.Position);
                 continue;
             }
-            if (t.Kind == TokenKind.Command && t.Text == "\\right")
+            if (t.Kind == TokenKind.Command && t.Text is "\\right" or "\\mright")
             {
                 p.Next();
                 close = ReadDelimiter(p, t.Text);
                 break;
             }
-            throw p.Error("\\left without matching \\right", at);
+            throw p.Error(name == "\\mleft" ? "\\mleft without matching \\mright" : "\\left without matching \\right", at);
         }
         p.PopContext();
         p.ExitNesting();
@@ -74,7 +76,7 @@ internal static class DelimiterCommands
     /// The delimiter after <c>\left</c>/<c>\middle</c>/<c>\right</c>/<c>\big…</c>: a literal character, <c>.</c> (absent, as
     /// an empty string), <c>\{ \} \|</c>, or a symbol command. Normalizes vertical-bar forms to <c>|</c> and U+2016.
     /// </summary>
-    private static string ReadDelimiter(LatexParser p, string after)
+    internal static string ReadDelimiter(LatexParser p, string after)
     {
         var t = p.Peek();
         string? result = null;
@@ -112,7 +114,7 @@ internal static class DelimiterCommands
     }
 
     /// <summary><c>∣</c> (U+2223) is the vertical bar; <c>∥</c> (U+2225) is the double bar U+2016.</summary>
-    private static string Normalize(int codepoint) => codepoint switch
+    internal static string Normalize(int codepoint) => codepoint switch
     {
         0x2223 => "|",
         0x2225 => "‖",

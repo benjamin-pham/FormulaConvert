@@ -52,3 +52,11 @@
 \projlim
 \sech
 \csch
+\deg
+\arccsc
+\arccsch
+\arcosh
+\arcsec
+\arcsech
+\arsinh
+\artanh

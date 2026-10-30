@@ -1,5 +1,6 @@
 using FormulaConvert.Data;
 using FormulaConvert.Latex;
+using FormulaConvert.Tests.Harness;
 using Xunit.Abstractions;
 
 namespace FormulaConvert.Tests;
@@ -26,6 +27,27 @@ public class CatalogTests(ITestOutputHelper output)
             foreach (var cat in cats) counts[cat]++;
         }
         output.WriteLine($"Documented commands: {documented.Count}");
+        foreach (var (cat, n) in counts) output.WriteLine($"  {cat}: {n}");
+        output.WriteLine($"  In more than one category: {overlap}");
+        output.WriteLine($"  Unclassified: {missing.Count}");
+        Assert.True(missing.Count == 0, $"{missing.Count} unclassified commands: {string.Join(' ', missing)}");
+    }
+
+    [Fact]
+    public void Every_mathlive_defined_command_is_classified()
+    {
+        var defined = MathLiveCatalog.Defined;
+        var counts = CategoryNames.ToDictionary(c => c, _ => 0);
+        int overlap = 0;
+        var missing = new List<string>();
+        foreach (var c in defined)
+        {
+            var cats = CommandClassifier.Categories(c);
+            if (cats.Count == 0) missing.Add(c);
+            if (cats.Count > 1) overlap++;
+            foreach (var cat in cats) counts[cat]++;
+        }
+        output.WriteLine($"MathLive defined commands: {defined.Count}");
         foreach (var (cat, n) in counts) output.WriteLine($"  {cat}: {n}");
         output.WriteLine($"  In more than one category: {overlap}");
         output.WriteLine($"  Unclassified: {missing.Count}");

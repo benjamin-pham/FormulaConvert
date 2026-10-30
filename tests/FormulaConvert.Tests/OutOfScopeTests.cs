@@ -113,4 +113,20 @@ public class OutOfScopeTests
 
     [Fact]
     public void Nested_wrappers_warn_each() => Check("\\textcolor{red}{\\Large x}", R("x"), 2);
+
+    [Fact]
+    public void Kern_bare_dimension()
+    {
+        var res = FormulaConverter.LatexToOmml("\\kern1em x");
+        Assert.Single(res.Diagnostics, d => d.Code == "out-of-scope");
+        Assert.Equal(OMath(R("x")), res.Output);
+    }
+
+    [Fact]
+    public void Lower_bare_dimension()
+    {
+        var res = FormulaConverter.LatexToOmml("\\lower2pt x");
+        Assert.Single(res.Diagnostics, d => d.Code == "out-of-scope");
+        Assert.Equal(OMath(R("x")), res.Output);
+    }
 }

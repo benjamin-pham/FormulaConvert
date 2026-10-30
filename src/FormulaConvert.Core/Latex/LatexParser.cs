@@ -161,7 +161,7 @@ internal sealed partial class LatexParser
             TokenKind.RBracket => context == RowContext.Optional,
             TokenKind.Ampersand => context == RowContext.Cell,
             TokenKind.NewLine => context is RowContext.Cell or RowContext.Line,
-            TokenKind.Command => (context == RowContext.Left && t.Text is "\\right" or "\\middle")
+            TokenKind.Command => (context == RowContext.Left && t.Text is "\\right" or "\\mright" or "\\middle")
                 || (context is RowContext.Cell or RowContext.Line or RowContext.Body && t.Text == "\\end"),
             _ => false,
         };

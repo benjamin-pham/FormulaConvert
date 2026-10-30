@@ -29,7 +29,7 @@ internal static class StyleCommands
             AddSty(t, name, Sty.Bold);
         AddSty(t, "\\mathrm", Sty.Plain);
         AddSty(t, "\\mathbfit", Sty.BoldItalic);
-        foreach (var name in new[] { "\\mathit", "\\textit" })
+        foreach (var name in new[] { "\\mathit", "\\textit", "\\mathnormal" })
             t.Add(name, (p, n) => p.ReadArgument()); // the default style
         AddScr(t, "\\mathbb", Scr.DoubleStruck);
         AddScr(t, "\\Bbb", Scr.DoubleStruck);

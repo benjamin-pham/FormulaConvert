@@ -1,11 +1,12 @@
 using FormulaConvert.Ast;
+using FormulaConvert.Data;
 
 namespace FormulaConvert.Latex.Commands;
 
 /// <summary>Fractions and binomials: <c>\frac</c> family, <c>\binom</c> family, <c>\nicefrac</c>, <c>\pdiff</c>, and the infix <c>\over \atop \choose</c>.</summary>
 internal static class FractionCommands
 {
-    private static readonly string[] InfixNames = ["\\over", "\\atop", "\\choose"];
+    private static readonly string[] InfixNames = ["\\over", "\\atop", "\\choose", "\\overwithdelims", "\\atopwithdelims", "\\brace", "\\brack"];
 
     public static void Register(CommandTable t)
     {
@@ -19,10 +20,77 @@ internal static class FractionCommands
         t.Add("\\tbinom", (p, name) => Binomial(p, name));
         t.Add("\\nicefrac", (p, name) => Fraction(p, FracKind.Skw));
         t.Add("\\pdiff", PartialDerivative);
+        t.Add("\\genfrac", (p, name) => Genfrac(p));
 
         t.AddInfix("\\over", (p, name, left) => Infix(p, name, left, (n, d) => new Frac(n, d, FracKind.Bar)));
         t.AddInfix("\\atop", (p, name, left) => Infix(p, name, left, (n, d) => new Frac(n, d, FracKind.NoBar)));
         t.AddInfix("\\choose", (p, name, left) => Infix(p, name, left, Delimited.Binomial));
+        t.AddInfix("\\overwithdelims", (p, name, left) => InfixWithDelims(p, name, left, FracKind.Bar));
+        t.AddInfix("\\atopwithdelims", (p, name, left) => InfixWithDelims(p, name, left, FracKind.NoBar));
+        t.AddInfix("\\brace", (p, name, left) => Infix(p, name, left, (n, d) => new Delimited("{", "}", "", [new Frac(n, d, FracKind.NoBar)])));
+        t.AddInfix("\\brack", (p, name, left) => Infix(p, name, left, (n, d) => new Delimited("[", "]", "", [new Frac(n, d, FracKind.NoBar)])));
+    }
+
+    private static FormulaNode Genfrac(LatexParser p)
+    {
+        int at = p.Peek(-1).Position;
+        string left = ReadGenfracDelim(p);
+        string right = ReadGenfracDelim(p);
+        string thickness = ReadRaw(p).Trim();
+        string mathstyle = ReadRaw(p).Trim();
+        var num = p.ReadArgument();
+        var den = p.ReadArgument();
+
+        if (mathstyle.Length > 0)
+            p.Warn("lossy", "\\genfrac mathstyle is ignored (OMML does not distinguish the style)", at);
+
+        var kind = thickness == "0pt" ? FracKind.NoBar : FracKind.Bar;
+        FormulaNode frac = new Frac(num, den, kind);
+
+        if (left.Length == 0 && right.Length == 0)
+            return frac;
+
+        return new Delimited(left, right, "", [frac]);
+    }
+
+    private static string ReadGenfracDelim(LatexParser p)
+    {
+        if (p.Peek().Kind == TokenKind.BeginGroup)
+        {
+            var raw = p.ReadRawGroup().Trim();
+            if (raw is "" or ".") return "";
+            if (raw is "\\{" or "{") return "{";
+            if (raw is "\\}" or "}") return "}";
+            if (raw is "\\|" or "\\Vert") return "‖";
+            if (raw is "\\vert" or "|") return "|";
+            if (raw is "\\lbrack" or "[") return "[";
+            if (raw is "\\rbrack" or "]") return "]";
+            if (raw is "(" or ")") return raw;
+            if (SymbolTable.TryGetCodepoint(raw, out var cp))
+                return DelimiterCommands.Normalize(cp);
+            return raw;
+        }
+        return DelimiterCommands.ReadDelimiter(p, "\\genfrac");
+    }
+
+    private static string ReadRaw(LatexParser p)
+    {
+        var t = p.Peek();
+        if (t.Kind == TokenKind.BeginGroup) return p.ReadRawGroup();
+        if (!p.HasArgument) throw p.Error("missing argument");
+        return p.Next().Text;
+    }
+
+    private static FormulaNode InfixWithDelims(LatexParser p, string name, List<FormulaNode> left, FracKind kind)
+    {
+        int second = FindSecondInfix(p);
+        if (second >= 0) throw p.Error("ambiguous " + name, second);
+        var open = DelimiterCommands.ReadDelimiter(p, name);
+        var close = DelimiterCommands.ReadDelimiter(p, name);
+        var num = LatexParser.Rowify([.. left]);
+        var den = p.ParseRowRest();
+        var frac = new Frac(num, den, kind);
+        return (open.Length == 0 && close.Length == 0) ? frac : new Delimited(open, close, "", [frac]);
     }
 
     private static FormulaNode Fraction(LatexParser p, FracKind kind, string? lossyName = null)
@@ -96,12 +164,12 @@ internal static class FractionCommands
                     break;
                 case TokenKind.Ampersand or TokenKind.NewLine when depth == 0:
                     return -1;
-                case TokenKind.Command when t.Text is "\\left" or "\\begin":
+                case TokenKind.Command when t.Text is "\\left" or "\\mleft" or "\\begin":
                     depth++;
                     break;
                 case TokenKind.Command when t.Text == "\\middle" && depth == 0:
                     return -1;
-                case TokenKind.Command when t.Text is "\\right" or "\\end":
+                case TokenKind.Command when t.Text is "\\right" or "\\mright" or "\\end":
                     if (depth == 0) return -1;
                     depth--;
                     break;
