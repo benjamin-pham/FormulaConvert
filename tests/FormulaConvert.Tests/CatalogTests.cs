@@ -56,6 +56,20 @@ public class CatalogTests(ITestOutputHelper output)
         Assert.True(overlapping.Count == 0, $"{overlapping.Count} commands in more than one category: {string.Join(", ", overlapping)}");
     }
 
+    [Fact]
+    public void Every_mathlive_defined_command_is_known_to_the_parser()
+    {
+        // A bare command may fail for a missing argument or a misplaced position; only "unknown command" or a non-parse exception is a gap.
+        var gaps = new List<string>();
+        foreach (var c in MathLiveCatalog.Defined)
+        {
+            var ex = Record.Exception(() => FormulaConverter.LatexToOmml(c));
+            if (ex is FormulaParseException fpe ? fpe.Message.StartsWith("unknown command", StringComparison.Ordinal) : ex is not null)
+                gaps.Add($"{c} ({ex.GetType().Name}: {ex.Message})");
+        }
+        Assert.True(gaps.Count == 0, $"{gaps.Count} commands the parser does not know: {string.Join(", ", gaps)}");
+    }
+
     public static IEnumerable<object[]> Aliases() =>
         CsvResource.ReadRows("aliases.csv", 3).Select(r => new object[] { r[0], int.Parse(r[1]) });
 

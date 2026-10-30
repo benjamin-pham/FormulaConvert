@@ -34,7 +34,7 @@ Syntax errors throw `FormulaParseException` with a position (`-1` for XML errors
 ## Scope
 
 A high-fidelity bridge between **OMML** (Word equations) and **MathLive 0.111.1**:
-- **1,037 MathLive defined commands** classified: standard documentation reference commands, macros/aliases, functions, infix fractions, and lengths are fully recognized.
+- **1,037 commands defined by MathLive 0.111.1**, each in exactly one catalog group and accepted by the parser (`CatalogTests`). Commands OMML cannot express (colors, sizes, lengths, `\mathstrut`…) drop their wrapper and keep the content, with an `out-of-scope` diagnostic.
 - **21 Microsoft Word equation gallery panels** verified with round-trip regression tests: built-in equations, fractions (including skewed `\nicefrac` and linear forms), scripts, radicals, integrals/large operators, brackets and `cases`, functions, accents and wide accents, limits/logs, operators, alignments (`m:aln`, `align*`, `eqnarray`), matrices, and symbols.
 - **Bidirectional typography & structure**: math Greek styling, `\mathscr`, full phantom mapping (`\phantom`, `\hphantom`, `\vphantom`, `\mathrlap`), wide accents and multi-primes (`f'''`), and bidirectional spacing commands (`\,`, `\:`, `\;`, `\!`, `\quad`, `\qquad`, `\enspace`, `~`, `\space`).
 - Detailed specifications: [Base Design Spec](docs/superpowers/specs/2026-10-28-omml-latex-converter-design.md) and [MathLive Fidelity Design Spec](docs/superpowers/specs/2026-10-29-mathlive-fidelity-design.md).
