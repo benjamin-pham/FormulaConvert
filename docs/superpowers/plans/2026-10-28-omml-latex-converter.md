@@ -38,7 +38,7 @@
 - Dấu `'` ↔ chỉ số trên `\prime` (U+2032); writer ra `^{\prime}`. Trong `ReadRun` (run toán, không `m:nor`), dãy ký tự `′`/`″`/`‴` đứng ngay sau một `Rune` khác được tách thành `Script(Run(rune trước), null, Run(dãy prime))` (`f′(x)` → `f^{\prime}(x)`, `g″` → `g^{\prime\prime}`); `′` đứng riêng giữ nguyên là `\prime`.
 - **Dấu phụ rộng và dấu gạch của Word:** `\hat`/`\tilde`/`\check`/`\vec` với thân nhiều hơn một ký tự (`Flatten(body)` có hơn một mục hoặc một `Run` có hơn một `Rune`) xuất `\widehat`/`\widetilde`/`\widecheck`/`\overrightarrow`; U+20D6 thân nhiều ký tự xuất `\overleftarrow`. Thân đúng một ký tự giữ `\hat{x}`, `\vec{x}`… Reader chuyển `m:acc` với U+0305 thành `\overline` (`Bar(top: true)`), với U+0332 thành `\underline` (`Bar(top: false)`).
 - **Kiểu chữ script:** `scr="script"` xuất `\mathscr` (dạng chuẩn của MathLive; `\mathcal` vẫn được đọc sang `scr="script"`).
-- **Điểm căn hàng:** Word đánh dấu điểm căn trong `m:eqArr` bằng `<m:aln/>` trong `m:rPr` (ECMA-376 §22.1.2.3), không phải ký tự `&`. Writer tách run tại mỗi `&` trong hàng `EqArray` thành run có `m:aln` (kể cả khi rỗng). Reader đổi `m:aln` thành `Run("&")` (kể cả khi `m:t` rỗng) khi run là con trực tiếp của `m:e` trong `m:eqArr` (hoặc qua vỏ `w:` trong suốt); `&` nguyên văn trong `m:t` từ OMML cũ vẫn đọc thành điểm căn.
+- **Điểm căn hàng:** Word đánh dấu điểm căn trong `m:eqArr` bằng `<m:aln/>` trong `m:rPr` (ECMA-376 §22.1.2.3), không phải ký tự `&`. AST dùng nút riêng `AlignMark` cho điểm căn, tách khỏi `Run("&")` là ký tự `&` thật (LaTeX `\&`). Parser: trong dòng của `align`/`cases`/`gather`, `&` kết thúc hàng (nên không bao giờ là đối số hay toán hạng của lệnh đứng trước) và các phần được nối bằng `AlignMark`. Writer OMML: `AlignMark` thành `m:aln` trên run kế tiếp (mọi kiểu, kể cả `m:nor`), hoặc thành run rỗng có `m:aln` khi không có run nào theo sau. Reader: `m:aln` thành `AlignMark` (kể cả khi `m:t` rỗng), chỉ với run là con trực tiếp của `m:e` trong `m:eqArr` (hoặc qua vỏ `w:` trong suốt). `&` nguyên văn trong `m:t` là ký tự thật, ra LaTeX `\&`.
 - `Delimited` mất cỡ của `\bigl(` (ra ký tự trần, kèm cảnh báo `lossy`).
 - Mã `Diagnostic.Code`: `out-of-scope`, `lossy`, `unsupported-omml`.
 
@@ -331,10 +331,10 @@
 | `\begin{array}{lc}a&b\\c&d\end{array}` | `Mx` với `mcJc` = left, (cột 2 mặc định) | `\begin{array}{lc}…` |
 | `\begin{array}{l\|c}…` | bỏ đường kẻ dọc + 1 `lossy` | `\begin{array}{lc}…` |
 | `\begin{matrix*}[l\|r]a&b\end{matrix*}` | `mcJc` = left, right | |
-| `\begin{cases}1&x>0\\0&x\le0\end{cases}` | `Dl({,,EqA([…]))` với `&` giữ trong `m:t` | |
+| `\begin{cases}1&x>0\\0&x\le0\end{cases}` | `Dl({,,EqA([…]))` với `m:aln` trên run sau `&` | |
 | `\begin{rcases}…\end{rcases}` | `begChr=""`, `endChr="}"` | |
 | `\begin{dcases}…` | như `cases` + 1 `lossy` | `\begin{cases}…` |
-| `\begin{align}f&=a\\&=b\end{align}` | `EqA` (hai hàng, `&` nằm trong `m:t`) | |
+| `\begin{align}f&=a\\&=b\end{align}` | `EqA` (hai hàng, `m:aln` trên run sau `&`) | |
 | `aligned`, `split` (cùng nội dung có `&`) | như `align` | `\begin{align}…` |
 | `\begin{gathered}a\\b\end{gathered}` | `EqA` (không `&`) | |
 | `gather` | như `gathered` | `\begin{gathered}…` |

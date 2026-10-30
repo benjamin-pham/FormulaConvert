@@ -254,14 +254,14 @@
 - [x] **Step 1: Viết test đỏ:**
   - `Check("\\begin{align}x&=1\\\\y&=2\\end{align}", …)`, với OMML mỗi hàng là `R("x") + <m:r><m:rPr><m:aln/></m:rPr><m:t>=1</m:t></m:r>`. Thứ tự con của `m:rPr` theo CT_RPR: `m:lit`, `m:nor` hoặc `m:scr`/`m:sty`, `m:brk`, `m:aln`.
   - Review Focus 4: `Check("\\begin{align}x&\\\\y&\\end{align}", …)` (run `m:aln` với `m:t` rỗng) và `Check("\\begin{align}a&&b\\end{align}", …)`.
-  - OMML cũ có `&` nguyên văn trong `m:t` vẫn ra `align`.
+  - `&` nguyên văn trong `m:t` là ký tự thật: ra `\&` (đã đổi so với bản đầu của plan, sau review).
   - `\begin{eqnarray}a&=&b\end{eqnarray}` không ném, Canonical `\begin{align}a&=&b\end{align}`.
   - Review Focus 2: `m:aln` trong ô `m:m`, ngay dưới `m:oMath`, và trong `m:f` nằm trong hàng `m:eqArr`, đều bị bỏ qua, không sinh `&`.
   - OMML có `m:brk` → nội dung giữ nguyên, một `lossy`.
 - [x] **Step 2: Chạy** `dotnet test --filter EnvironmentTests`. Kết quả mong đợi: FAIL.
 - [x] **Step 3: Cài đặt** theo D7 trong spec.
   - Reader: trong `ReadRun`, xét `m:aln` **trước** lệnh `return` khi text rỗng.
-  - Writer: tách text của run tại mỗi `&` trong hàng `EqArray`. Phần sau `&` thành run mới có `m:aln`, kể cả khi phần đó rỗng.
+  - Writer: `AlignMark` thành `m:aln` trên run kế tiếp, hoặc run rỗng nếu không có run nào theo sau.
 - [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa dòng "Ký tự `&` … giữ nguyên là `Run("&")`" trong "Quy ước".
 - [x] **Step 5: Commit** `fix: write equation alignment points as m:aln like Word`.
 

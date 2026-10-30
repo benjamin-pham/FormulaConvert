@@ -89,8 +89,9 @@ Phạm vi áp dụng:
 
 **D7. Điểm căn hàng.**
 - Word đánh dấu điểm căn trong `m:eqArr` bằng `<m:aln/>` trong `m:rPr` (ECMA-376 §22.1.2.3), không phải ký tự `&`.
-- Reader đổi `m:aln` thành `Run("&")`, kể cả khi `m:t` rỗng, nhưng chỉ với run là con trực tiếp của `m:e` trong `m:eqArr` (hoặc nằm trong vỏ `w:` trong suốt). `m:aln` ở nơi khác bị bỏ qua.
-- Writer tách run tại `&` và ghi `m:aln`. `&` nguyên văn trong `m:t` vẫn đọc được.
+- Reader đổi `m:aln` thành nút AST `AlignMark` (không phải `Run("&")`, để không lẫn với ký tự `&` thật), kể cả khi `m:t` rỗng, nhưng chỉ với run là con trực tiếp của `m:e` trong `m:eqArr` (hoặc nằm trong vỏ `w:` trong suốt). `m:aln` ở nơi khác bị bỏ qua.
+- Writer ghi `AlignMark` thành `m:aln` trên run kế tiếp (hoặc run rỗng nếu không có). `&` nguyên văn trong `m:t` là ký tự thật và ra LaTeX `\&`.
+- Trong dòng của `align`/`cases`/`gather`, `&` kết thúc hàng, nên không bao giờ là đối số hay toán hạng của lệnh đứng trước (`\sum&x`, `b^&2`: cái sau là lỗi cú pháp).
 - `eqnarray` là `align`.
 - `m:brk` bị bỏ kèm `lossy`.
 

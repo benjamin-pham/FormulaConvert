@@ -47,14 +47,24 @@ internal static partial class OmmlWriter
         return e;
     }
 
+    /// <summary>
+    /// One <c>m:e</c> of an equation array. An <see cref="AlignMark"/> is <c>m:aln</c> on the run that follows it
+    /// (ECMA-376 §22.1.2.3); when no run follows (end of row, another alignment point, or a non-run item) it is an empty run.
+    /// </summary>
     private static void WriteEqArrayRow(XElement parent, FormulaNode row)
     {
         NestingGuard.EnsureStack(-1);
         var items = new List<FormulaNode>();
         Flatten(row, items);
+        bool aln = false;
         for (int i = 0; i < items.Count; i++)
         {
-            if (items[i] is Run run)
+            if (items[i] is AlignMark)
+            {
+                if (aln) parent.Add(WriteRun("", new RunStyle(), hasAln: true));
+                aln = true;
+            }
+            else if (items[i] is Run run)
             {
                 var text = new System.Text.StringBuilder(run.Text);
                 while (i + 1 < items.Count && items[i + 1] is Run next && next.Style == run.Style)
@@ -62,32 +72,16 @@ internal static partial class OmmlWriter
                     text.Append(next.Text);
                     i++;
                 }
-                var fullText = text.ToString();
-                if (!fullText.Contains('&'))
-                {
-                    parent.Add(WriteRun(fullText, run.Style));
-                }
-                else
-                {
-                    var pieces = fullText.Split('&');
-                    for (int k = 0; k < pieces.Length; k++)
-                    {
-                        if (k == 0)
-                        {
-                            if (pieces[0].Length > 0)
-                                parent.Add(WriteRun(pieces[0], run.Style, hasAln: false));
-                        }
-                        else
-                        {
-                            parent.Add(WriteRun(pieces[k], run.Style, hasAln: true));
-                        }
-                    }
-                }
+                parent.Add(WriteRun(text.ToString(), run.Style, aln));
+                aln = false;
             }
             else
             {
+                if (aln) parent.Add(WriteRun("", new RunStyle(), hasAln: true));
+                aln = false;
                 parent.Add(WriteNode(items[i]));
             }
         }
+        if (aln) parent.Add(WriteRun("", new RunStyle(), hasAln: true));
     }
 }

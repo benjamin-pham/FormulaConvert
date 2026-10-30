@@ -313,8 +313,8 @@ public class EnvironmentTests
     }
 
     [Fact]
-    public void Escaped_ampersand_in_align_row_is_written_raw() =>
-        Assert.Equal("\\begin{align}a&b\\end{align}", FormulaConverter.OmmlToLatex(OMath(EqA(R("a&b")))).Output);
+    public void Literal_ampersand_in_equation_array_is_escaped_not_an_alignment_point() =>
+        Assert.Equal("\\begin{gathered}a\\&b\\end{gathered}", FormulaConverter.OmmlToLatex(OMath(EqA(R("a&b")))).Output);
 
     [Fact]
     public void Environment_inside_fraction_argument() =>
@@ -343,11 +343,33 @@ public class EnvironmentTests
     }
 
     [Fact]
-    public void Align_reads_legacy_verbatim_ampersand()
-    {
-        var r = FormulaConverter.OmmlToLatex(OMath(EqA(R("x&=1"), R("y&=2"))));
-        Assert.Equal("\\begin{align}x&=1\\\\y&=2\\end{align}", r.Output);
-    }
+    public void Escaped_ampersand_in_aligned_row_stays_a_character() =>
+        Check("\\begin{aligned}a\\&b\\end{aligned}", EqA(R("a&b")), "\\begin{gathered}a\\&b\\end{gathered}");
+
+    [Fact]
+    public void Escaped_ampersand_and_alignment_point_in_one_row() =>
+        Check("\\begin{align}a\\&b&=c\\end{align}", EqA(R("a&b") + R("=c", "<m:aln/>")));
+
+    [Fact]
+    public void Escaped_ampersand_in_text_inside_align_stays_literal() =>
+        Check("\\begin{aligned}\\text{a\\&b}\\end{aligned}", EqA(R("a&b", "<m:nor/>")), "\\begin{gathered}\\text{a\\&b}\\end{gathered}");
+
+    [Fact]
+    public void Alignment_point_is_not_the_operand_of_a_preceding_nary() =>
+        Check("\\begin{align}\\sum&x\\end{align}",
+            "<m:eqArr><m:e><m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:subHide m:val=\"1\"/><m:supHide m:val=\"1\"/></m:naryPr><m:sub></m:sub><m:sup></m:sup><m:e></m:e></m:nary>"
+            + R("x", "<m:aln/>") + "</m:e></m:eqArr>",
+            "\\begin{align}\\sum{}&x\\end{align}");
+
+    [Theory]
+    [InlineData("\\begin{align}b^&2\\end{align}")]
+    [InlineData("\\begin{align}\\frac1&2\\end{align}")]
+    public void Alignment_point_is_not_an_argument(string latex) =>
+        Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
+
+    [Fact]
+    public void Alignment_point_attaches_to_a_following_normal_text_run() =>
+        Check("\\begin{align}\\text{a}&\\text{b}\\end{align}", EqA(R("a", "<m:nor/>") + R("b", "<m:nor/><m:aln/>")));
 
     [Fact]
     public void Eqnarray_maps_to_align()

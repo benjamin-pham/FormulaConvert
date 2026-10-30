@@ -84,6 +84,9 @@ internal static partial class LatexWriter
             case Phantom ph:
                 WritePhantom(ph, b);
                 break;
+            case AlignMark:
+                b.Text("&");
+                break;
             // Feature slices add cases here, e.g. `case Frac f: WriteFrac(f, b); break;`
             default:
                 throw new NotSupportedException($"LatexWriter does not support {node.GetType().Name} nodes.");

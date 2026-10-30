@@ -85,6 +85,7 @@ internal static partial class OmmlWriter
         GroupChar g => WriteGroupChar(g),
         BorderBox bb => WriteBorderBox(bb),
         Phantom ph => WritePhantom(ph),
+        AlignMark => WriteRun("", new RunStyle(), hasAln: true), // only reachable outside an m:eqArr row
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),
     };

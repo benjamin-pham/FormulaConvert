@@ -28,29 +28,14 @@ internal static partial class LatexWriter
         b.Text("\\end{" + name + "}");
     }
 
-    /// <summary>An equation array environment; a <see cref="Run"/> <c>&amp;</c> directly in a row is the alignment mark, written raw.</summary>
+    /// <summary>An equation array environment; an <see cref="AlignMark"/> in a row is written as <c>&amp;</c>.</summary>
     private static void WriteEquations(string name, EqArray a, LatexBuilder b)
     {
         b.Text("\\begin{" + name + "}");
         for (int i = 0; i < a.Rows.Count; i++)
         {
             if (i > 0) RowBreak(StartsWithOpenBracket(a.Rows[i]), b);
-            var items = new List<FormulaNode>();
-            Flatten(a.Rows[i], items);
-            foreach (var item in items)
-            {
-                if (item is not Run run || !run.Text.Contains('&'))
-                {
-                    WriteNode(item, b);
-                    continue;
-                }
-                var pieces = run.Text.Split('&');
-                for (int k = 0; k < pieces.Length; k++)
-                {
-                    if (k > 0) b.Text("&");
-                    if (pieces[k].Length > 0) WriteStyledRuns([run with { Text = pieces[k] }], b);
-                }
-            }
+            WriteNode(a.Rows[i], b);
         }
         b.Text("\\end{" + name + "}");
     }
@@ -72,7 +57,7 @@ internal static partial class LatexWriter
     {
         var items = new List<FormulaNode>();
         foreach (var row in a.Rows) Flatten(row, items);
-        return items.Any(i => i is Run r && r.Text.Contains('&'));
+        return items.Any(i => i is AlignMark);
     }
 
     private static void Flatten(FormulaNode node, List<FormulaNode> items)

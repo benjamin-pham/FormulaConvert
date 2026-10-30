@@ -22,7 +22,7 @@ internal enum RowContext
     Left,
     /// <summary>A matrix/array cell: ended by <c>&amp;</c>, <c>\\</c> or <c>\end</c>.</summary>
     Cell,
-    /// <summary>A line of an align/cases/gather body: ended by <c>\\</c> or <c>\end</c>; <c>&amp;</c> stays a literal.</summary>
+    /// <summary>A line of an align/cases/gather body: ended by <c>&amp;</c> (an <see cref="AlignMark"/> between the parts), <c>\\</c> or <c>\end</c>.</summary>
     Line,
     /// <summary>The body of a transparent environment (<c>equation</c>…): ended by <c>\end</c>.</summary>
     Body,
@@ -150,7 +150,7 @@ internal sealed partial class LatexParser
 
     /// <summary>
     /// Tokens that end a row: <c>}</c> and end of input always; <c>]</c> in an <see cref="RowContext.Optional"/> row;
-    /// <c>\right</c> and <c>\middle</c> in a <see cref="RowContext.Left"/> row. <c>\end</c>, <c>&amp;</c> and <c>\\</c> in environment rows.
+    /// <c>\right</c> and <c>\middle</c> in a <see cref="RowContext.Left"/> row. <c>\end</c>, <c>&amp;</c> and <c>\\</c> in environment rows (so an alignment point never becomes an argument or operand).
     /// </summary>
     private bool IsRowTerminator(Token t)
     {
@@ -159,7 +159,7 @@ internal sealed partial class LatexParser
         {
             TokenKind.EndOfInput or TokenKind.EndGroup => true,
             TokenKind.RBracket => context == RowContext.Optional,
-            TokenKind.Ampersand => context == RowContext.Cell,
+            TokenKind.Ampersand => context is RowContext.Cell or RowContext.Line,
             TokenKind.NewLine => context is RowContext.Cell or RowContext.Line,
             TokenKind.Command => (context == RowContext.Left && t.Text is "\\right" or "\\mright" or "\\middle")
                 || (context is RowContext.Cell or RowContext.Line or RowContext.Body && t.Text == "\\end"),
@@ -304,9 +304,6 @@ internal sealed partial class LatexParser
                 return CharRun(text);
             case TokenKind.Command:
                 return ParseCommand();
-            case TokenKind.Ampersand when _contexts.Count > 0 && _contexts.Peek() == RowContext.Line:
-                Next();
-                return CharRun("&");
             default:
                 throw Error($"unexpected {Describe(t)}");
         }

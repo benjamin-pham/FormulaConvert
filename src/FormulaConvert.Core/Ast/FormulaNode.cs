@@ -124,6 +124,9 @@ internal sealed record Matrix(IReadOnlyList<IReadOnlyList<FormulaNode>> Rows, st
 
 internal sealed record EqArray(IReadOnlyList<FormulaNode> Rows) : FormulaNode;
 
+/// <summary>An alignment point inside an <see cref="EqArray"/> row (<c>m:aln</c> in OMML, <c>&amp;</c> in LaTeX); a literal ampersand is a <see cref="Run"/>.</summary>
+internal sealed record AlignMark : FormulaNode;
+
 internal sealed record Accent(string Chr, FormulaNode Body) : FormulaNode;
 
 internal sealed record Bar(bool Top, FormulaNode Body) : FormulaNode;

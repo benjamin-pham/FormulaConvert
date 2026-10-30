@@ -20,7 +20,7 @@ internal static partial class OmmlReader
 
         if (inEqArrayRow && rPr?.Element(M + "aln") is { } aln && !IsOff(aln))
         {
-            items.Add(new Run("&", new RunStyle()));
+            items.Add(new AlignMark());
         }
 
         var text = string.Concat(r.Elements(M + "t").Select(t => t.Value));

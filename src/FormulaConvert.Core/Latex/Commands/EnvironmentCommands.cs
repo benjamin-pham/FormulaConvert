@@ -92,7 +92,19 @@ internal static class EnvironmentCommands
     }
 
     private static EqArray ParseEquations(LatexParser p, string name, int at) =>
-        new(ParseRows(p, RowContext.Line, name, at).Select(r => r[0]).ToList());
+        new(ParseRows(p, RowContext.Line, name, at).Select(JoinAtAlignmentPoints).ToList());
+
+    /// <summary>The parts of an equation line, separated by <see cref="AlignMark"/>s.</summary>
+    private static FormulaNode JoinAtAlignmentPoints(List<FormulaNode> parts)
+    {
+        var items = new List<FormulaNode>();
+        for (int i = 0; i < parts.Count; i++)
+        {
+            if (i > 0) items.Add(new AlignMark());
+            items.Add(parts[i]);
+        }
+        return LatexParser.Rowify(items);
+    }
 
     /// <summary>
     /// Rows separated by <c>\\</c>, each a list of cells; reads the closing <c>\end{name}</c>. An empty row right
