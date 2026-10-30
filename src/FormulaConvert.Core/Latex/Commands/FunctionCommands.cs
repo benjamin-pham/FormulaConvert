@@ -20,7 +20,7 @@ internal static class FunctionCommands
             }
             int pos = p.Position;
             if (p.Peek().Kind != TokenKind.BeginGroup) throw p.Error("expected {");
-            var name = OperatorName(p.ReadArgument());
+            var name = OperatorName(DropPlaceholders(p, p.ReadArgument(), pos));
             if (name is Run { Text.Length: 0 }) throw p.Error("empty function name", pos);
             bool limits = starred || name is Run r && FunctionTable.BoundsFunctions.Contains("\\" + r.Text);
             return ParseFunction(p, name, limits);
@@ -29,10 +29,29 @@ internal static class FunctionCommands
         {
             int pos = p.Position;
             if (p.Peek().Kind != TokenKind.BeginGroup) throw p.Error("expected {");
-            var name = OperatorName(p.ReadArgument());
+            var name = OperatorName(DropPlaceholders(p, p.ReadArgument(), pos));
             if (name is Run { Text.Length: 0 }) throw p.Error("empty function name", pos);
             return ParseFunction(p, name, true);
         });
+    }
+
+    /// <summary>
+    /// A function name is text, so an input box in it cannot be kept (it would not read back as a function):
+    /// top-level placeholders are dropped with a <c>lossy</c> diagnostic, and a name left empty is then an error.
+    /// </summary>
+    private static FormulaNode DropPlaceholders(LatexParser p, FormulaNode arg, int position)
+    {
+        var items = new List<FormulaNode>();
+        Flatten(arg, items);
+        if (!items.Any(i => i is Placeholder)) return arg;
+        p.Diagnostics.Add(new Diagnostic("lossy", "\\placeholder inside \\operatorname is dropped", position));
+        return LatexParser.Rowify(items.Where(i => i is not Placeholder).ToList());
+    }
+
+    private static void Flatten(FormulaNode node, List<FormulaNode> items)
+    {
+        if (node is FormulaRow row) foreach (var item in row.Items) Flatten(item, items);
+        else items.Add(node);
     }
 
     /// <summary>The argument of <c>\operatorname</c>, parsed as math: its runs joined into one upright run (other content kept, spaces dropped).</summary>

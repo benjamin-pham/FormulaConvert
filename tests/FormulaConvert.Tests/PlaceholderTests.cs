@@ -196,12 +196,39 @@ public class PlaceholderTests
     }
 
     [Theory]
-    [InlineData(@"\text{\placeholder{}}")]
     [InlineData(@"\operatorname{\placeholder{}}")]
-    public void Raw_text_contexts_do_not_crash(string latex)
+    [InlineData(@"\operatorname*{\placeholder{}}")]
+    public void Operatorname_with_only_placeholder_is_an_empty_name_error(string latex)
     {
-        var ex = Record.Exception(() => FormulaConverter.LatexToOmml(latex));
-        Assert.True(ex is null or FormulaParseException, $"Expected null or FormulaParseException, got {ex?.GetType().Name}: {ex?.Message}");
+        var ex = Assert.Throws<FormulaParseException>(() => FormulaConverter.LatexToOmml(latex));
+        Assert.Contains("empty function name", ex.Message);
+    }
+
+    [Fact]
+    public void Operatorname_drops_placeholder_with_lossy()
+    {
+        var r = FormulaConverter.LatexToOmml(@"\operatorname{a\placeholder{}}");
+        Assert.True(SameXml(FormulaConverter.LatexToOmml(@"\operatorname{a}").Output, r.Output));
+        var d = Assert.Single(r.Diagnostics);
+        Assert.Equal("lossy", d.Code);
+        Assert.Equal(@"\operatorname{a}", FormulaConverter.OmmlToLatex(r.Output).Output);
+    }
+
+    [Fact]
+    public void Text_keeps_placeholder_as_literal_with_lossy()
+    {
+        var r = FormulaConverter.LatexToOmml(@"\text{\placeholder{}}");
+        Assert.True(SameXml(OMath(R(@"\placeholder{}", "<m:nor/>")), r.Output));
+        Assert.Equal("lossy", Assert.Single(r.Diagnostics).Code);
+    }
+
+    [Fact]
+    public void Box_inside_equation_row_keeps_alignment_mark()
+    {
+        var omml = "<m:eqArr><m:e><m:box><m:e>" + R("a") + R("=1", "<m:aln/>") + "</m:e></m:box></m:e></m:eqArr>";
+        var r = FormulaConverter.OmmlToLatex(OMath(omml));
+        Assert.Equal(@"\begin{align}a&=1\end{align}", r.Output);
+        Assert.Empty(r.Diagnostics);
     }
 
     [Fact]

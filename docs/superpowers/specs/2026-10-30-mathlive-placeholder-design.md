@@ -113,7 +113,7 @@ Hệ quả: `\sin\placeholder{}` và `\sum\placeholder{}` khi đi LaTeX → OMML
 ### 4.5 Dữ liệu và catalog
 
 - `\placeholder` hiện không có trong `src/FormulaConvert.Core/Data/mathlive-commands.txt` lẫn `tests/FormulaConvert.Tests/Data/mathlive-defined.txt`. Công cụ trích xuất đã bỏ sót nó, nhưng MathLive có xuất lệnh này (ảnh chụp Mathfield Demo của người dùng cho thấy `\begin{pmatrix}\placeholder{} & …`).
-- Thêm `\placeholder` bằng tay vào cả hai file, giữ đúng thứ tự sắp xếp và định dạng sẵn có. Nếu có sẵn gói `mathlive` 0.111.1 thì xác nhận bằng cách đọc text (`grep '"placeholder"' mathlive.mjs`) và **không chạy mã trong gói**. Không cần sửa `tools/`.
+- Thêm `\placeholder` bằng tay vào cả hai file, mỗi lệnh một dòng. `tests/FormulaConvert.Tests/Data/mathlive-defined.txt` được sắp theo bảng chữ cái nên chèn đúng chỗ (giữa `\pi` và `\pmod`). `src/FormulaConvert.Core/Data/mathlive-commands.txt` theo thứ tự trong tài liệu MathLive chứ không theo bảng chữ cái, nên thêm vào cuối file. Nếu có sẵn gói `mathlive` 0.111.1 thì xác nhận bằng cách đọc text (`grep '"placeholder"' mathlive.mjs`) và **không chạy mã trong gói**. Không cần sửa `tools/`.
 - `CatalogTests`: `\placeholder` phải thuộc đúng một nhóm, ở đây là `Structural` vì nó có trong `CommandTable`. Không được nằm trong `not-in-mathlive.txt`.
 
 ### 4.6 Tài liệu
