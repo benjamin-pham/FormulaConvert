@@ -129,4 +129,77 @@ public class MathLiveOutputTests
     {
         CaseRunner.Check(new ConversionCase(@"\text{≢}", R("≢", "<m:nor/>")));
     }
+
+    /// <summary>TeX control symbols the writer uses that MathLive reads as ordinary escapes.</summary>
+    private static readonly HashSet<string> ControlSymbols = [@"\\", @"\&", @"\%", @"\#", @"\$", @"\_", @"\{", @"\}"];
+
+    private static void CollectNonMathLiveCommands(string latex, string source, List<string> violations)
+    {
+        foreach (Match m in Regex.Matches(latex, @"\\(?:begin|end)\{([^}]+)\}"))
+            if (!MathLiveCatalog.Environments.Contains(m.Groups[1].Value))
+                violations.Add($"environment {m.Groups[1].Value} in `{latex}` from {source}");
+        foreach (Match m in Regex.Matches(latex, @"\\(?:[A-Za-z]+|[^A-Za-z\s]| )"))
+        {
+            var cmd = m.Value;
+            if (cmd is @"\begin" or @"\end" || ControlSymbols.Contains(cmd)) continue;
+            if (!MathLiveCatalog.Defined.Contains(cmd))
+                violations.Add($"{cmd} in `{latex}` from {source}");
+        }
+    }
+
+    [Fact]
+    public void Round_tripping_any_mathlive_command_only_writes_mathlive_commands()
+    {
+        // § stands for the command under test; every template that parses is converted to OMML and back.
+        string[] templates =
+        [
+            "§", "§{x}", "§{x}{y}", "§{x}{y}{z}", "§[x]{y}", "§{(}{)}{0pt}{}{x}{y}",
+            "a § b", "§_a^b z", "\\left(§\\right)", "\\sqrt[§]{x}", "{§}^2", "§{x}^2_i",
+        ];
+        var violations = new List<string>();
+        var crashes = new List<string>();
+        int converted = 0;
+        foreach (var command in MathLiveCatalog.Defined)
+        {
+            foreach (var template in templates)
+            {
+                var latex = template.Replace("§", command);
+                try
+                {
+                    var omml = FormulaConverter.LatexToOmml(latex).Output;
+                    CollectNonMathLiveCommands(FormulaConverter.OmmlToLatex(omml).Output, latex, violations);
+                    converted++;
+                }
+                catch (FormulaParseException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    crashes.Add($"`{latex}`: {ex.GetType().Name}: {ex.Message}");
+                }
+            }
+        }
+        foreach (var env in MathLiveCatalog.Environments.Select(e => e["env:".Length..]))
+        {
+            foreach (var latex in new[] { $"\\begin{{{env}}}a&b\\\\c&d\\end{{{env}}}", $"\\begin{{{env}}}{{cc}}a&b\\end{{{env}}}" })
+            {
+                try
+                {
+                    var omml = FormulaConverter.LatexToOmml(latex).Output;
+                    CollectNonMathLiveCommands(FormulaConverter.OmmlToLatex(omml).Output, latex, violations);
+                }
+                catch (FormulaParseException)
+                {
+                }
+                catch (Exception ex)
+                {
+                    crashes.Add($"`{latex}`: {ex.GetType().Name}: {ex.Message}");
+                }
+            }
+        }
+        Assert.True(converted > 5000, $"only {converted} templates converted; the test is no longer exercising the writers");
+        Assert.True(crashes.Count == 0, $"{crashes.Count} crashes: {string.Join("; ", crashes.Take(10))}");
+        var distinct = violations.Distinct().ToList();
+        Assert.True(distinct.Count == 0, $"{distinct.Count} non-MathLive commands written: {string.Join("; ", distinct.Take(25))}");
+    }
 }
