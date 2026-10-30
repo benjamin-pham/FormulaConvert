@@ -170,6 +170,22 @@ public class NaryFunctionTests
         Assert.DoesNotContain("\\", r.Output);
         Assert.True(SameXml(OMath(Fn(FName("argmax"), R("x"))), r.Output), r.Output);
     }
+    [Theory]
+    [InlineData("foo\u2009bar", "\\operatorname{foobar}x")]
+    [InlineData("foo\u2003bar", "\\operatorname{foobar}x")]
+    [InlineData("foo\u00A0bar", "\\operatorname{foobar}x")]
+    [InlineData("foo bar", "\\operatorname{foobar}x")]
+    public void Function_name_spaces_are_dropped_when_written(string name, string latex) =>
+        Assert.Equal(latex, FormulaConverter.OmmlToLatex(OMath(Fn(FName(name), R("x")))).Output);
+
+    [Fact]
+    public void Function_name_of_only_spaces_still_reads_back()
+    {
+        var latex = FormulaConverter.OmmlToLatex(OMath(Fn(FName(" \u2009"), R("x")))).Output;
+        var ex = Record.Exception(() => FormulaConverter.LatexToOmml(latex));
+        Assert.True(ex is null, $"{latex}: {ex?.Message}");
+    }
+
     [Fact] public void Operatorname_ignores_spaces() =>
         Check("\\operatorname{ f o o } x", Fn(FName("foo"), R("x")), "\\operatorname{foo}x");
     [Fact] public void Operatorname_empty_throws() =>

@@ -48,13 +48,16 @@ internal static partial class LatexWriter
         WriteOperand(f.Arg, true, b);
     }
 
-    /// <summary>The text of a function name made only of runs.</summary>
+    /// <summary>
+    /// The text of a function name made only of runs, without spaces (<c>\operatorname</c> drops them when read, so
+    /// writing them would not round-trip); false when nothing else is left.
+    /// </summary>
     private static bool TryGetName(FormulaNode node, out string name)
     {
         var flat = Flatten(node);
         name = "";
         if (flat.Count == 0 || flat.Any(i => i is not Run)) return false;
-        name = string.Concat(flat.Cast<Run>().Select(r => r.Text));
+        name = string.Concat(string.Concat(flat.Cast<Run>().Select(r => r.Text)).Where(c => !char.IsWhiteSpace(c)));
         return name.Length > 0;
     }
 
