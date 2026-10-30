@@ -33,9 +33,13 @@ Syntax errors throw `FormulaParseException` with a position (`-1` for XML errors
 
 ## Scope
 
-Only the **intersection** of OMML and MathLive: fractions, radicals, scripts, n-ary operators, functions, delimiters, matrices and environments, accents, bars, boxes, phantoms, font styles and about 700 single symbols. All 732 commands in the [MathLive command reference](https://mathlive.io/mathfield/reference/commands/) are classified, and a test enforces it.
+A high-fidelity bridge between **OMML** (Word equations) and **MathLive 0.111.1**:
+- **1,037 MathLive defined commands** classified: standard documentation reference commands, macros/aliases, functions, infix fractions, and lengths are fully recognized.
+- **21 Microsoft Word equation gallery panels** verified with round-trip regression tests: built-in equations, fractions (including skewed `\nicefrac` and linear forms), scripts, radicals, integrals/large operators, brackets and `cases`, functions, accents and wide accents, limits/logs, operators, alignments (`m:aln`, `align*`, `eqnarray`), matrices, and symbols.
+- **Bidirectional typography & structure**: math Greek styling, `\mathscr`, full phantom mapping (`\phantom`, `\hphantom`, `\vphantom`, `\mathrlap`), wide accents and multi-primes (`f'''`), and bidirectional spacing commands (`\,`, `\:`, `\;`, `\!`, `\quad`, `\qquad`, `\enspace`, `~`, `\space`).
+- Detailed specifications: [Base Design Spec](docs/superpowers/specs/2026-10-28-omml-latex-converter-design.md) and [MathLive Fidelity Design Spec](docs/superpowers/specs/2026-10-29-mathlive-fidelity-design.md).
 
-Out-of-scope commands (color, font size, `\href`, spacing, `\ce{}` and so on): the wrapper is dropped, the **content is kept**, and a `Diagnostic` is emitted (`out-of-scope`). Other codes: `lossy`, `unsupported-omml`.
+Out-of-scope commands (color, font size, `\href`, `\ce{}` and so on): the wrapper is dropped, the **content is kept**, and a `Diagnostic` is emitted (`out-of-scope`). Other diagnostic codes: `lossy`, `unsupported-omml`.
 
 ## Known limits
 
