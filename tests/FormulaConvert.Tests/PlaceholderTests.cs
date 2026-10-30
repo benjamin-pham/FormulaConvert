@@ -118,6 +118,7 @@ public class PlaceholderTests
     {
         var omml = $"<m:func><m:fName></m:fName><m:e>{R("x")}</m:e></m:func>";
         var latex = FormulaConverter.OmmlToLatex(OMath(omml)).Output;
+        Assert.Equal("x", latex);
         Assert.DoesNotContain(@"\placeholder", latex);
     }
 

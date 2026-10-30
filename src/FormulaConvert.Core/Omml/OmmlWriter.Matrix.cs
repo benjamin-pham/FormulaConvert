@@ -39,8 +39,7 @@ internal static partial class OmmlWriter
         foreach (var row in a.Rows)
         {
             var rowElement = new XElement(M + "e");
-            if (row is not Placeholder)
-                WriteEqArrayRow(rowElement, row);
+            WriteEqArrayRow(rowElement, row);
             if (!rowElement.HasElements) rowElement.Value = "";
             e.Add(rowElement);
         }
