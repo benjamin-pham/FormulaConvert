@@ -197,7 +197,8 @@ public class MathLiveOutputTests
                 }
             }
         }
-        Assert.True(converted > 5000, $"only {converted} templates converted; the test is no longer exercising the writers");
+        int attempts = MathLiveCatalog.Defined.Count * templates.Length;
+        Assert.True(converted > attempts * 85 / 100, $"only {converted} of {attempts} templates converted; the test is no longer exercising the writers");
         Assert.True(crashes.Count == 0, $"{crashes.Count} crashes: {string.Join("; ", crashes.Take(10))}");
         var distinct = violations.Distinct().ToList();
         Assert.True(distinct.Count == 0, $"{distinct.Count} non-MathLive commands written: {string.Join("; ", distinct.Take(25))}");
