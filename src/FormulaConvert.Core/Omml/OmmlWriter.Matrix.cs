@@ -39,7 +39,8 @@ internal static partial class OmmlWriter
         foreach (var row in a.Rows)
         {
             var rowElement = new XElement(M + "e");
-            WriteEqArrayRow(rowElement, row);
+            if (row is not Placeholder)
+                WriteEqArrayRow(rowElement, row);
             if (!rowElement.HasElements) rowElement.Value = "";
             e.Add(rowElement);
         }
@@ -56,6 +57,7 @@ internal static partial class OmmlWriter
         NestingGuard.EnsureStack(-1);
         var items = new List<FormulaNode>();
         Flatten(row, items);
+        if (items is [Placeholder]) return;
         bool aln = false;
         for (int i = 0; i < items.Count; i++)
         {

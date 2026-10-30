@@ -29,7 +29,8 @@ internal static partial class OmmlWriter
     internal static XElement Element(string localName, FormulaNode content)
     {
         var e = new XElement(M + localName);
-        WriteContent(e, content);
+        if (content is not Placeholder)
+            WriteContent(e, content);
         if (!e.HasElements) e.Value = ""; // serialize as <m:num></m:num>, not <m:num />
         return e;
     }
@@ -85,6 +86,7 @@ internal static partial class OmmlWriter
         GroupChar g => WriteGroupChar(g),
         BorderBox bb => WriteBorderBox(bb),
         Phantom ph => WritePhantom(ph),
+        Placeholder => new XElement(M + "box", Element("e", FormulaRow.Empty)),
         AlignMark => WriteRun("", new RunStyle(), hasAln: true), // only reachable outside an m:eqArr row
         // Feature slices add cases here, e.g. `Frac f => WriteFrac(f),`
         _ => throw new NotSupportedException($"OmmlWriter does not support {node.GetType().Name} nodes."),

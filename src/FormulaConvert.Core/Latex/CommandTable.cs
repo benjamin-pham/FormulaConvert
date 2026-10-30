@@ -38,6 +38,7 @@ internal sealed class CommandTable
         SpaceCommands.Register(table);
         OutOfScopeCommands.Register(table);
         NegationCommands.Register(table);
+        PlaceholderCommands.Register(table);
         // Later command groups: add one `XxxCommands.Register(table);` line each.
         return table;
     }

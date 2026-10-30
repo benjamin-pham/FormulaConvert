@@ -84,6 +84,10 @@ internal static partial class LatexWriter
             case Phantom ph:
                 WritePhantom(ph, b);
                 break;
+            case Placeholder:
+                b.Command("\\placeholder");
+                b.Text("{}");
+                break;
             case AlignMark:
                 b.Text("&");
                 break;

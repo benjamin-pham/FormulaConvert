@@ -140,3 +140,5 @@ internal sealed record FunctionApply(FormulaNode Name, FormulaNode Arg) : Formul
 internal sealed record BorderBox(BoxEdges Edges, FormulaNode Body) : FormulaNode;
 
 internal sealed record Phantom(bool Show, bool ZeroWidth, bool ZeroAscent, bool ZeroDescent, FormulaNode Body) : FormulaNode;
+
+internal sealed record Placeholder : FormulaNode;
