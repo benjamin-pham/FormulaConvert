@@ -51,7 +51,7 @@
   - `SymbolTable.TryGetCommand(cp)` bỏ qua lệnh có trong `NotInMathLive`; thêm `SymbolTable.TryGetParseOnlyKind(int cp, out string kind)`.
   - `MathLiveCatalog.Defined` (`IReadOnlySet<string>` lệnh có `\`) và `MathLiveCatalog.Environments` (`IReadOnlySet<string>`).
 
-- [ ] **Step 1: Sinh danh sách.** Viết `tools/extract_mathlive_defined.py <mathlive.mjs> <out>`. Công cụ trích:
+- [x] **Step 1: Sinh danh sách.** Viết `tools/extract_mathlive_defined.py <mathlive.mjs> <out>`. Công cụ trích:
   - tên trong `defineFunction(...)`, `defineSymbol(s)`, mảng `["\\x", …]`;
   - khóa của `DEFAULT_MACROS`, các bảng macro con và `ACCENTS`;
   - môi trường trong `defineEnvironment`/`defineTabularEnvironment`/`defineRootEnvironment`, ghi thành dòng `env:<tên>`.
@@ -61,7 +61,7 @@
   - bỏ qua khối `var INLINE_SHORTCUTS = {…}`, khối `mhchem`, và khóa không phải tên lệnh (`def`, `args`, `expand`, `captureSelection`…).
 
   Ghi nguồn bundle vào `THIRD-PARTY-NOTICES.md`. Thêm vào AGENTS.md (mục Rules) quy tắc: "`LatexWriter` chỉ xuất lệnh có trong MathLive; lệnh chỉ để đọc thì liệt kê trong `not-in-mathlive.txt` (`MathLiveOutputTests`)". Sửa luôn các tên cũ trong AGENTS.md: `MathConvert`→`FormulaConvert`, `MathConverter`→`FormulaConverter`, `MathParseException`→`FormulaParseException`.
-- [ ] **Step 2: Viết test đỏ** trong `MathLiveOutputTests`:
+- [x] **Step 2: Viết test đỏ** trong `MathLiveOutputTests`:
   - `Catalog_has_canaries`: `\frac \nicefrac \left \right \middle \hat \vec \tilde \check \deg \bmod \pmod \mathscr \overrightarrow \widehat \mathrlap \mathrel \quad \> \enskip`, cùng `env:aligned env:gathered env:Vmatrix env:rcases`, đều có trong danh sách; `\sech` và `\csch` không có. Thiếu thì sửa regex của công cụ, không thêm tay.
   - `Every_emitted_command_is_defined_in_mathlive`:
     - Với mọi codepoint trong `symbols.csv`, `nary.csv`, `accents.csv` và mọi tên trong `functions.txt`, dựng nút tương ứng: `Run`, `Nary`, `Accent`, `FunctionApply(Run(tên không có \, Plain), Run("x"))`.
@@ -81,8 +81,8 @@
     `LatexToOmml("a\\mathrel{≢}b")` cho lại `R("a≢b")` và không có diagnostic.
   - `Mathrel_with_several_characters_still_warns`: `\mathrel{ab}` → một `out-of-scope`.
   - `Parse_only_symbol_in_text_is_literal` (Review Focus 1): `Check("\\text{≢}", R("≢", Nor))`.
-- [ ] **Step 3: Chạy** `dotnet test --filter MathLiveOutputTests`. Kết quả mong đợi: FAIL. Test thứ hai liệt kê vi phạm, dự kiến `\iddots \nequiv \nsimeq \napprox \nasymp \ntlg \ntgl \nsqsubseteq \nsqsupseteq \rightangle \measuredrightangle \varlrtriangle \epar \qed \Euler \dotminus \dlsh \drsh \leftwavearrow \rightwavearrow \P \sech \csch`.
-- [ ] **Step 4: Cài đặt.**
+- [x] **Step 3: Chạy** `dotnet test --filter MathLiveOutputTests`. Kết quả mong đợi: FAIL. Test thứ hai liệt kê vi phạm, dự kiến `\iddots \nequiv \nsimeq \napprox \nasymp \ntlg \ntgl \nsqsubseteq \nsqsupseteq \rightangle \measuredrightangle \varlrtriangle \epar \qed \Euler \dotminus \dlsh \drsh \leftwavearrow \rightwavearrow \P \sech \csch`.
+- [x] **Step 4: Cài đặt.**
   - Điền `not-in-mathlive.txt` theo danh sách vi phạm thực tế:
 
     | `kind` | Lệnh |
@@ -97,8 +97,8 @@
   - `WriteFunctionName`: tên có `kind` là `fn` ghi `\operatorname{…}`.
   - `OutOfScopeCommands.Handle`: chỉ với `\mathrel` và `\mathbin`, khi đối số giữ lại là một `Run` có đúng một `Rune`, thì không cảnh báo.
   - Sửa các dòng `\mathrel{x}` và `\mathbin{x}` trong `OutOfScopeTests` (khoảng dòng 40-46) sang đối số hai ký tự (`{xy}`) để vẫn kiểm cảnh báo.
-- [ ] **Step 5: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa các test cũ đang chờ `\nequiv`, `\qed`… sang dạng mới.
-- [ ] **Step 6: Commit** `fix: never write LaTeX commands MathLive does not define`.
+- [x] **Step 5: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa các test cũ đang chờ `\nequiv`, `\qed`… sang dạng mới.
+- [x] **Step 6: Commit** `fix: never write LaTeX commands MathLive does not define`.
 
 ### Task 2: Lệnh chuẩn khi đọc ngược ký hiệu
 
@@ -109,14 +109,14 @@
 **Interfaces:**
 - Consumes: `SymbolTable.TryGetCommand` (Task 1).
 
-- [ ] **Step 1: Viết test đỏ** `Canonical_reverse_command` (Theory trên `SymbolTable.TryGetCommand(cp)`) với 13 cặp:
+- [x] **Step 1: Viết test đỏ** `Canonical_reverse_command` (Theory trên `SymbolTable.TryGetCommand(cp)`) với 13 cặp:
   - `0x2270 \nleq`, `0x2271 \ngeq`, `0x2288 \nsubseteq`, `0x2289 \nsupseteq`;
   - `0x2224 \nmid`, `0x2226 \nparallel`, `0x2A87 \lneq`, `0x2A88 \gneq`;
   - `0x2248 \approx`, `0x223C \sim`, `0x2225 \parallel`, `0x2223 \mid`, `0x27F7 \longleftrightarrow`.
-- [ ] **Step 2: Chạy** `dotnet test --filter Canonical_reverse_command`. Kết quả mong đợi: cả 13 ca FAIL.
-- [ ] **Step 3: Cài đặt.** Đưa dòng chuẩn lên trước trong `symbols.csv`; thêm 13 cặp vào `PREFERRED`.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Cập nhật kỳ vọng cũ (`\thickapprox`, `\thicksim`, `\Vert` cho U+2225, `\vert` cho U+2223, `\biconditional`) và ví dụ ký hiệu chuẩn trong "Quy ước". Bộ thoát ngoặc của `Delimited` (`‖` U+2016 → `\Vert`) không đổi.
-- [ ] **Step 5: Commit** `fix: write the common LaTeX command for shared symbol codepoints`.
+- [x] **Step 2: Chạy** `dotnet test --filter Canonical_reverse_command`. Kết quả mong đợi: cả 13 ca FAIL.
+- [x] **Step 3: Cài đặt.** Đưa dòng chuẩn lên trước trong `symbols.csv`; thêm 13 cặp vào `PREFERRED`.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Cập nhật kỳ vọng cũ (`\thickapprox`, `\thicksim`, `\Vert` cho U+2225, `\vert` cho U+2223, `\biconditional`) và ví dụ ký hiệu chuẩn trong "Quy ước". Bộ thoát ngoặc của `Delimited` (`‖` U+2016 → `\Vert`) không đổi.
+- [x] **Step 5: Commit** `fix: write the common LaTeX command for shared symbol codepoints`.
 
 ### Task 3: Khoảng trắng hai chiều
 
@@ -136,7 +136,7 @@
   - `internal static class SpaceTable { bool TryGetText(string command, out string text); bool TryGetCommand(int cp, out string command); bool IsSpace(int cp); }`;
   - `LatexWriter.WriteMathText(string text, LatexBuilder b)`: thay vòng lặp `WriteChar` trong `WriteStyledRuns`, gộp hai U+2003 thành `\qquad`.
 
-- [ ] **Step 1: Viết test đỏ** (`CaseRunner.Check`, OMML là một run):
+- [x] **Step 1: Viết test đỏ** (`CaseRunner.Check`, OMML là một run):
 
 | Latex | `m:t` | Canonical |
 |---|---|---|
@@ -158,10 +158,10 @@
   - `Check("\\quad x", …)` → `m:t` có `xml:space="preserve"`, vì quy tắc hiện có xét ký tự đầu và cuối.
   - `\int f(x)\,dx` → không còn diagnostic.
   - `\operatorname{arg\,max}x` → tên hàm `argmax`, không có U+2009 (Review Focus 5). `NaryFunctionTests.Operatorname_argument_spacing_is_dropped` phải tiếp tục xanh.
-- [ ] **Step 2: Chạy** `dotnet test --filter SpaceTests`. Kết quả mong đợi: FAIL.
-- [ ] **Step 3: Cài đặt** theo D3 trong spec. Quy tắc `xml:space` trong `OmmlWriter.WriteRun` không đổi. Sau `\quad` và `\enspace`, `LatexBuilder.Command` tự chèn dấu cách khi gặp chữ cái; sau `\,`, `\:`, `\;`, `\ ` thì không cần.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Thêm dòng khoảng trắng vào "Quy ước".
-- [ ] **Step 5: Commit** `feat: map LaTeX spacing commands to Unicode spaces in OMML`.
+- [x] **Step 2: Chạy** `dotnet test --filter SpaceTests`. Kết quả mong đợi: FAIL.
+- [x] **Step 3: Cài đặt** theo D3 trong spec. Quy tắc `xml:space` trong `OmmlWriter.WriteRun` không đổi. Sau `\quad` và `\enspace`, `LatexBuilder.Command` tự chèn dấu cách khi gặp chữ cái; sau `\,`, `\:`, `\;`, `\ ` thì không cần.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Thêm dòng khoảng trắng vào "Quy ước".
+- [x] **Step 5: Commit** `feat: map LaTeX spacing commands to Unicode spaces in OMML`.
 
 ### Task 4: Phân số xiên và phân số một dòng
 
@@ -191,7 +191,7 @@
   - `WriteScriptBase` và `WriteOperand` coi `Frac { Kind: Lin }` là không phải atom.
   - `lossy` phát ở reader, không ở writer.
 - [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa test `\nicefrac` cũ (đang chờ `lin`); cập nhật bảng Task 4 và "Quy ước" của plan 2026-10-28.
-- [ ] **Step 5: Commit** `fix: map \nicefrac to skewed fractions and write linear fractions as a/b`.
+- [x] **Step 5: Commit** `fix: map \nicefrac to skewed fractions and write linear fractions as a/b`.
 
 ### Task 5: Kiểu chữ: `\mathscr` và chữ Hy Lạp toán học
 
@@ -251,19 +251,19 @@
   - `Latex/Commands/EnvironmentCommands.cs`: `eqnarray` và `eqnarray*` thành `align`; xóa khỏi mảng `Transparent` và khỏi nhánh `case` trong `ParseEnvironment` (khoảng dòng 62-66).
 - Test: `tests/FormulaConvert.Tests/EnvironmentTests.cs`; sửa `EnvironmentTests.Transparent("eqnarray")`.
 
-- [ ] **Step 1: Viết test đỏ:**
+- [x] **Step 1: Viết test đỏ:**
   - `Check("\\begin{align}x&=1\\\\y&=2\\end{align}", …)`, với OMML mỗi hàng là `R("x") + <m:r><m:rPr><m:aln/></m:rPr><m:t>=1</m:t></m:r>`. Thứ tự con của `m:rPr` theo CT_RPR: `m:lit`, `m:nor` hoặc `m:scr`/`m:sty`, `m:brk`, `m:aln`.
   - Review Focus 4: `Check("\\begin{align}x&\\\\y&\\end{align}", …)` (run `m:aln` với `m:t` rỗng) và `Check("\\begin{align}a&&b\\end{align}", …)`.
   - OMML cũ có `&` nguyên văn trong `m:t` vẫn ra `align`.
   - `\begin{eqnarray}a&=&b\end{eqnarray}` không ném, Canonical `\begin{align}a&=&b\end{align}`.
   - Review Focus 2: `m:aln` trong ô `m:m`, ngay dưới `m:oMath`, và trong `m:f` nằm trong hàng `m:eqArr`, đều bị bỏ qua, không sinh `&`.
   - OMML có `m:brk` → nội dung giữ nguyên, một `lossy`.
-- [ ] **Step 2: Chạy** `dotnet test --filter EnvironmentTests`. Kết quả mong đợi: FAIL.
-- [ ] **Step 3: Cài đặt** theo D7 trong spec.
+- [x] **Step 2: Chạy** `dotnet test --filter EnvironmentTests`. Kết quả mong đợi: FAIL.
+- [x] **Step 3: Cài đặt** theo D7 trong spec.
   - Reader: trong `ReadRun`, xét `m:aln` **trước** lệnh `return` khi text rỗng.
   - Writer: tách text của run tại mỗi `&` trong hàng `EqArray`. Phần sau `&` thành run mới có `m:aln`, kể cả khi phần đó rỗng.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa dòng "Ký tự `&` … giữ nguyên là `Run("&")`" trong "Quy ước".
-- [ ] **Step 5: Commit** `fix: write equation alignment points as m:aln like Word`.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Sửa dòng "Ký tự `&` … giữ nguyên là `Run("&")`" trong "Quy ước".
+- [x] **Step 5: Commit** `fix: write equation alignment points as m:aln like Word`.
 
 ### Task 8: Phantom theo bảng đầy đủ
 
@@ -271,15 +271,15 @@
 - Modify: `Omml/OmmlReader.Boxes.cs` (`ReadPhantom`), `Latex/LatexWriter.Boxes.cs` (`WritePhantom`), `Latex/Commands/BoxCommands.cs` (đăng ký `\mathrlap` và `\rlap`), `Data/outofscope.csv` (xóa `\mathrlap` và `\rlap`)
 - Test: `tests/FormulaConvert.Tests/BoxTests.cs`; sửa `BoxTests.Writer_shown_phantom_without_a_command_is_the_body` và dòng `\rlap{x}` trong `OutOfScopeTests` (khoảng dòng 53).
 
-- [ ] **Step 1: Viết test đỏ** cho từng dòng của bảng D8 trong spec:
+- [x] **Step 1: Viết test đỏ** cho từng dòng của bảng D8 trong spec:
   - `Check("\\mathrlap{x}", "<m:phant><m:phantPr><m:zeroWid m:val=\"1\"/></m:phantPr><m:e>…x…</m:e></m:phant>")`;
   - `\rlap{x}` cho cùng OMML, Canonical `\mathrlap{x}`;
   - OMML có `show` bật cùng `zeroAsc` → `x`, kèm một `lossy`;
   - OMML có `show` tắt cùng `zeroWid` và `zeroAsc` → `\phantom{x}`, kèm một `lossy`.
-- [ ] **Step 2: Chạy** `dotnet test --filter BoxTests`. Kết quả mong đợi: FAIL.
-- [ ] **Step 3: Cài đặt** theo D8 trong spec. `lossy` phát ở reader.
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS.
-- [ ] **Step 5: Commit** `feat: map zero-width visible phantoms to \mathrlap`.
+- [x] **Step 2: Chạy** `dotnet test --filter BoxTests`. Kết quả mong đợi: FAIL.
+- [x] **Step 3: Cài đặt** theo D8 trong spec. `lossy` phát ở reader.
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS.
+- [x] **Step 5: Commit** `feat: map zero-width visible phantoms to \mathrlap`.
 
 ### Task 9: Phân loại mọi lệnh MathLive định nghĩa
 
@@ -294,9 +294,9 @@
 **Interfaces:**
 - Consumes: `MathLiveCatalog.Defined` (Task 1).
 
-- [ ] **Step 1: Viết test đỏ** `Every_mathlive_defined_command_is_classified`, giống `Every_documented_command_is_classified` nhưng duyệt `MathLiveCatalog.Defined`.
-- [ ] **Step 2: Chạy** test. Kết quả mong đợi: FAIL, kèm danh sách lệnh chưa phân loại. Tên rác (không phải tên lệnh) thì sửa công cụ ở Task 1, không phân loại.
-- [ ] **Step 3: Cài đặt** theo nhóm. Nhóm không khớp bảng dưới thì chọn `out-of-scope`, và ghi tên lệnh vào báo cáo.
+- [x] **Step 1: Viết test đỏ** `Every_mathlive_defined_command_is_classified`, giống `Every_documented_command_is_classified` nhưng duyệt `MathLiveCatalog.Defined`.
+- [x] **Step 2: Chạy** test. Kết quả mong đợi: FAIL, kèm danh sách lệnh chưa phân loại. Tên rác (không phải tên lệnh) thì sửa công cụ ở Task 1, không phân loại.
+- [x] **Step 3: Cài đặt** theo nhóm. Nhóm không khớp bảng dưới thì chọn `out-of-scope`, và ghi tên lệnh vào báo cáo.
 
 | Nhóm | Lệnh | Cách xử lý |
 |---|---|---|
@@ -311,13 +311,13 @@
 | Bỏ vỏ | `\mathnormal` | như `\mathit` |
 | | `\mathstrut \ensuremath \style \htmlClass \htmlId \mathchoice \slashed \stackbin \displaylines \obeyspaces` | `outofscope.csv`, arity và đối số giữ lại theo chữ ký `defineFunction` |
 
-- [ ] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Thêm mỗi nhóm một ca vào test tương ứng:
+- [x] **Step 4: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Thêm mỗi nhóm một ca vào test tương ứng:
   - `Check("\\genfrac{(}{)}{0pt}{}{a}{b}", <OMML của \binom{a}{b}>, "\\binom{a}{b}")`;
   - `a\bmod b` → `R("a\u2004") + R("mod", Sty("p")) + R("\u2004b")`, không có diagnostic;
   - `\deg x` → `m:func`;
   - `\kern1em x` → `R("x")`, một `out-of-scope`;
   - `\bra{x}` → `R("⟨x|")`, không có diagnostic.
-- [ ] **Step 5: Commit** `feat: accept every command MathLive defines`.
+- [x] **Step 5: Commit** `feat: accept every command MathLive defines`.
 
 ### Task 10: Hồi quy theo 21 bảng Word và cập nhật tài liệu
 
@@ -325,7 +325,7 @@
 - Create: `tests/FormulaConvert.Tests/WordGalleryTests.cs`
 - Modify: `README.md` (phạm vi: MathLive 0.111.1, liên kết spec)
 
-- [ ] **Step 1: Viết test** `Word_gallery_formula_round_trips` (Theory). Mỗi ca:
+- [x] **Step 1: Viết test** `Word_gallery_formula_round_trips` (Theory). Mỗi ca:
   - `LatexToOmml` không ném và không có diagnostic `out-of-scope`;
   - `OmmlToLatex` của kết quả, parse lại, cho cùng OMML;
   - mọi lệnh trong LaTeX đầu ra thuộc `MathLiveCatalog.Defined`.
@@ -348,6 +348,6 @@
 | Matrix | `\begin{pmatrix}1&\cdots&1\\\vdots&\ddots&\vdots\end{pmatrix}`; `\begin{Vmatrix}a&b\\c&d\end{Vmatrix}`; `\begin{matrix}1&\\&1\end{matrix}` |
 | Ký hiệu | `a\nleq b\approx c\parallel d`; `\mathbb{R}\mathscr{L}\mathfrak{g}`; `a\mathrel{≢}b`; `\int f\,dx` |
 
-- [ ] **Step 2: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Ca nào đỏ là lỗi thật: quay lại task sở hữu phần đó, sửa theo TDD.
-- [ ] **Step 3: Cập nhật** `README.md`.
-- [ ] **Step 4: Commit** `docs: describe MathLive fidelity scope` (gồm test hồi quy).
+- [x] **Step 2: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Ca nào đỏ là lỗi thật: quay lại task sở hữu phần đó, sửa theo TDD.
+- [x] **Step 3: Cập nhật** `README.md`.
+- [x] **Step 4: Commit** `docs: describe MathLive fidelity scope` (gồm test hồi quy).
