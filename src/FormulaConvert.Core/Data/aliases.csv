@@ -1,6 +1,5 @@
 # command,arity,replacement (#1,#2 are argument placeholders; source: MathLive macros, MIT)
 \neq,0,\ne
-\iff,0,\Longleftrightarrow
 \darr,0,\downarrow
 \dArr,0,\Downarrow
 \Darr,0,\Downarrow

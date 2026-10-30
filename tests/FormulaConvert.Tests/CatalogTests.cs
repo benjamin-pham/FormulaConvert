@@ -17,20 +17,21 @@ public class CatalogTests(ITestOutputHelper output)
     {
         var documented = Documented();
         var counts = CategoryNames.ToDictionary(c => c, _ => 0);
-        int overlap = 0;
+        var overlapping = new List<string>();
         var missing = new List<string>();
         foreach (var c in documented)
         {
             var cats = CommandClassifier.Categories(c);
             if (cats.Count == 0) missing.Add(c);
-            if (cats.Count > 1) overlap++;
+            if (cats.Count > 1) overlapping.Add($"{c} ({string.Join('+', cats)})");
             foreach (var cat in cats) counts[cat]++;
         }
         output.WriteLine($"Documented commands: {documented.Count}");
         foreach (var (cat, n) in counts) output.WriteLine($"  {cat}: {n}");
-        output.WriteLine($"  In more than one category: {overlap}");
+        output.WriteLine($"  In more than one category: {overlapping.Count}");
         output.WriteLine($"  Unclassified: {missing.Count}");
         Assert.True(missing.Count == 0, $"{missing.Count} unclassified commands: {string.Join(' ', missing)}");
+        Assert.True(overlapping.Count == 0, $"{overlapping.Count} commands in more than one category: {string.Join(", ", overlapping)}");
     }
 
     [Fact]
@@ -38,20 +39,21 @@ public class CatalogTests(ITestOutputHelper output)
     {
         var defined = MathLiveCatalog.Defined;
         var counts = CategoryNames.ToDictionary(c => c, _ => 0);
-        int overlap = 0;
+        var overlapping = new List<string>();
         var missing = new List<string>();
         foreach (var c in defined)
         {
             var cats = CommandClassifier.Categories(c);
             if (cats.Count == 0) missing.Add(c);
-            if (cats.Count > 1) overlap++;
+            if (cats.Count > 1) overlapping.Add($"{c} ({string.Join('+', cats)})");
             foreach (var cat in cats) counts[cat]++;
         }
         output.WriteLine($"MathLive defined commands: {defined.Count}");
         foreach (var (cat, n) in counts) output.WriteLine($"  {cat}: {n}");
-        output.WriteLine($"  In more than one category: {overlap}");
+        output.WriteLine($"  In more than one category: {overlapping.Count}");
         output.WriteLine($"  Unclassified: {missing.Count}");
         Assert.True(missing.Count == 0, $"{missing.Count} unclassified commands: {string.Join(' ', missing)}");
+        Assert.True(overlapping.Count == 0, $"{overlapping.Count} commands in more than one category: {string.Join(", ", overlapping)}");
     }
 
     public static IEnumerable<object[]> Aliases() =>
