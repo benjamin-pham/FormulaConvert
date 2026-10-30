@@ -16,6 +16,7 @@ Tiêu chí thành công:
 ## 2. Phi mục tiêu và giới hạn
 
 - Không thêm lệnh LaTeX mà MathLive không định nghĩa (`\dots`, `\substack`, `\tag`, `\label`, `\prescript`, `\sideset`, `\tensor`, `\cancelto`, `\overbracket`, `alignat`, `subarray`, `CD`…); chúng vẫn báo `unknown command`. Ngoại lệ: các lệnh kế hoạch trước đã thêm vẫn đọc được, nhưng không bao giờ được xuất (D1).
+- Dấu `′` ngay sau một ký tự luôn thành chỉ số trên (D6), kể cả sau chữ số, nên `5′` (feet, phút) thành `5^{\prime}`. OMML không phân biệt hai cách dùng.
 - Ký tự không có lệnh LaTeX nào (ví dụ `≙`, `⨅`) được ghi nguyên văn. MathLive coi chúng là ký hiệu thường, nên khoảng cách quanh chúng có thể khác Word.
 - Không biểu diễn cỡ chữ, màu, hay kiểu hiển thị (`\displaystyle`) trong OMML.
 - Bảng Large Operator của Word chưa có ảnh; chỉ kiểm các toán tử lớn xuất hiện ở bảng Operators.

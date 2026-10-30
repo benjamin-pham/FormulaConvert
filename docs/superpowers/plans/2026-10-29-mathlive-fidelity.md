@@ -351,3 +351,14 @@
 - [x] **Step 2: Chạy** `dotnet test`. Kết quả mong đợi: PASS. Ca nào đỏ là lỗi thật: quay lại task sở hữu phần đó, sửa theo TDD.
 - [x] **Step 3: Cập nhật** `README.md`.
 - [x] **Step 4: Commit** `docs: describe MathLive fidelity scope` (gồm test hồi quy).
+
+## Sửa sau review (2026-10-30)
+
+Review độc lập bản cài đặt tìm ra các lỗi sau; mỗi lỗi có test đỏ trước và commit riêng:
+
+1. Điểm căn hàng dùng chung `Run("&")` với ký tự `&` thật nên `\&` trong `aligned` thành `m:aln`, và `&` sau `\sum` hay `^` bị nuốt làm toán hạng. Nay dùng nút `AlignMark` riêng; trong dòng của `align`/`cases`/`gather`, `&` kết thúc hàng (D7). `m:aln` nằm trên run `m:nor` kế tiếp thay vì một run rỗng riêng.
+2. `\nicefrac` làm cơ số chỉ số được bọc `{}` (D4), vì MathLive định nghĩa nó là macro `^{#1}\!\!/\!_{#2}`.
+3. `CatalogTests` nay khẳng định mỗi lệnh thuộc đúng một nhóm (bảy lệnh trùng nhóm đã bị gỡ khỏi `symbols.csv`/`aliases.csv`) và mọi lệnh MathLive định nghĩa được parser chấp nhận.
+4. Khoảng trắng trong tên hàm bị bỏ khi ghi LaTeX (tên chỉ gồm khoảng trắng không còn sinh `\operatorname{ }` mà parser từ chối).
+5. Test quét rộng: mọi lệnh MathLive định nghĩa, qua 12 khuôn đối số, chuyển LaTeX→OMML→LaTeX chỉ ghi lệnh MathLive (`Round_tripping_any_mathlive_command_only_writes_mathlive_commands`).
+6. Thêm test cho dấu phẩy trên trong ngữ cảnh và cho surrogate lẻ ở phía LaTeX.

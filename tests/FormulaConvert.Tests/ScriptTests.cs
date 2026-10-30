@@ -191,4 +191,19 @@ public class ScriptTests
         Check("^2 b", SSup("", R("2")) + R("b"), "^2 b");
     [Fact] public void Double_empty_group_is_not_a_prefix_script_marker() =>
         Check("{{}}^2 b", SSup("", R("2")) + R("b"), "^2 b");
+
+    /// <summary>A prime character in a run attaches to the character before it, except in normal text or at the start of a row.</summary>
+    [Theory]
+    [InlineData("<m:r><m:t>f′</m:t></m:r>", "f^{\\prime}")]
+    [InlineData("<m:r><m:t>f‴</m:t></m:r>", "f^{\\prime\\prime\\prime}")]
+    [InlineData("<m:r><m:t>f′+g′</m:t></m:r>", "f^{\\prime}+g^{\\prime}")]
+    [InlineData("<m:r><m:t>f′x</m:t></m:r>", "f^{\\prime}x")]
+    [InlineData("<m:r><m:t>f(x)′</m:t></m:r>", "f(x)^{\\prime}")]
+    [InlineData("<m:r><m:rPr><m:sty m:val=\"b\"/></m:rPr><m:t>f′</m:t></m:r>", "\\mathbf{f}^{\\prime}")]
+    [InlineData("<m:r><m:rPr><m:nor/></m:rPr><m:t>f′</m:t></m:r>", "\\text{f′}")]
+    [InlineData("<m:r><m:t>′</m:t></m:r>", "\\prime")]
+    [InlineData("<m:sSup><m:e><m:r><m:t>x</m:t></m:r></m:e><m:sup><m:r><m:t>2</m:t></m:r></m:sup></m:sSup><m:r><m:t>′</m:t></m:r>", "x^2\\prime")]
+    [InlineData("<m:d><m:e><m:r><m:t>a+b</m:t></m:r></m:e></m:d><m:r><m:t>′</m:t></m:r>", "\\left(a+b\\right)\\prime")]
+    public void Prime_characters_in_runs_in_context(string omml, string latex) =>
+        Assert.Equal(latex, FormulaConverter.OmmlToLatex(OMath(omml)).Output);
 }

@@ -257,4 +257,26 @@ public class CoreTests
         Assert.Equal(-1, ex.Position);
         Assert.Contains("nesting too deep", ex.Message);
     }
+
+    [Theory]
+    [InlineData("a\uD800b")]
+    [InlineData("\uDC00")]
+    [InlineData("\\text{\uD800}")]
+    [InlineData("\\begin{align}a\uDFFF&b\\end{align}")]
+    [InlineData("x^\uD800")]
+    [InlineData("\\mathbb{\uD800}")]
+    public void Lone_surrogate_in_latex_never_produces_invalid_xml(string latex)
+    {
+        string omml;
+        try
+        {
+            omml = FormulaConverter.LatexToOmml(latex).Output;
+        }
+        catch (FormulaParseException)
+        {
+            return;
+        }
+        var ex = Record.Exception(() => System.Xml.Linq.XDocument.Parse(omml));
+        Assert.True(ex is null, $"`{latex}` gave OMML that is not well-formed XML: {ex?.Message}");
+    }
 }

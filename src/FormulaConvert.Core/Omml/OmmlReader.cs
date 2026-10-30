@@ -71,7 +71,7 @@ internal static partial class OmmlReader
                 case "r":
                     ReadRun(el, items, d, inEqArrayRow);
                     break;
-                case "brk":
+                case "brk": // schema-invalid here (m:brk belongs in m:rPr, see ReadRun), but tolerated with the same diagnostic
                     d.Add(new Diagnostic("lossy", "manual break (m:brk) is dropped", -1));
                     break;
                 case "f":
