@@ -33,6 +33,20 @@ public class FractionTests
         Assert.Equal(0, d.Position);
     }
 
+    [Fact]
+    public void Skewed_fraction_as_nary_operand_round_trips() =>
+        Check("\\sum\\nicefrac{a}{b}",
+            "<m:nary><m:naryPr><m:chr m:val=\"∑\"/><m:subHide m:val=\"1\"/><m:supHide m:val=\"1\"/></m:naryPr><m:sub></m:sub><m:sup></m:sup><m:e>"
+            + F(R("a"), R("b"), "skw") + "</m:e></m:nary>");
+
+    [Fact]
+    public void Skewed_fraction_as_script_base_is_braced() =>
+        Check("{\\nicefrac{a}{b}}^2", "<m:sSup><m:e>" + F(R("a"), R("b"), "skw") + "</m:e><m:sup>" + R("2") + "</m:sup></m:sSup>");
+
+    [Fact]
+    public void Skewed_fraction_as_subscript_base_is_braced() =>
+        Check("{\\nicefrac{a}{b}}_i", "<m:sSub><m:e>" + F(R("a"), R("b"), "skw") + "</m:e><m:sub>" + R("i") + "</m:sub></m:sSub>");
+
     [Fact] public void Frac_no_warning() => Assert.Empty(FormulaConverter.LatexToOmml("\\frac{a}{b}").Diagnostics);
 
     [Fact] public void Over() => Check("a \\over b", F(R("a"), R("b")), "\\frac{a}{b}");
