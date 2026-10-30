@@ -11,7 +11,7 @@ internal static partial class OmmlReader
     private static FormulaNode ReadMatrix(XElement el, List<Diagnostic> d)
     {
         var rows = el.Elements(M + "mr")
-            .Select(mr => (IReadOnlyList<FormulaNode>)mr.Elements(M + "e").Select(e => ReadContent(e, d)).ToList())
+            .Select(mr => (IReadOnlyList<FormulaNode>)mr.Elements(M + "e").Select(e => ReadSlot(e, d)).ToList())
             .ToList();
         var align = new System.Text.StringBuilder();
         foreach (var mc in el.Element(M + "mPr")?.Element(M + "mcs")?.Elements(M + "mc") ?? [])
@@ -27,5 +27,5 @@ internal static partial class OmmlReader
 
     /// <summary><c>m:eqArr</c>: one row per <c>m:e</c>.</summary>
     private static FormulaNode ReadEqArray(XElement el, List<Diagnostic> d) =>
-        new EqArray(el.Elements(M + "e").Select(e => ReadContent(e, d, inEqArrayRow: true)).ToList());
+        new EqArray(el.Elements(M + "e").Select(e => ReadSlot(e, d, inEqArrayRow: true)).ToList());
 }

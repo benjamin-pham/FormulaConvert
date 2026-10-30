@@ -11,19 +11,19 @@ internal static partial class OmmlReader
     {
         var chr = (string?)el.Element(M + "accPr")?.Element(M + "chr")?.Attribute(M + "val") ?? "̂";
         if (chr == "\u033F")
-            return new Bar(true, new Bar(true, ReadContent(el.Element(M + "e"), d)));
+            return new Bar(true, new Bar(true, ReadSlot(el.Element(M + "e"), d)));
         if (chr == "\u0305")
-            return new Bar(true, ReadContent(el.Element(M + "e"), d));
+            return new Bar(true, ReadSlot(el.Element(M + "e"), d));
         if (chr == "\u0332")
-            return new Bar(false, ReadContent(el.Element(M + "e"), d));
-        return new Accent(chr, ReadContent(el.Element(M + "e"), d));
+            return new Bar(false, ReadSlot(el.Element(M + "e"), d));
+        return new Accent(chr, ReadSlot(el.Element(M + "e"), d));
     }
 
     /// <summary><c>m:bar</c>: <c>m:pos</c> <c>top</c> is the overline; <c>bot</c> or no <c>m:pos</c> (the ECMA-376 default) the underline.</summary>
     private static FormulaNode ReadBar(XElement el, List<Diagnostic> d)
     {
         var pos = (string?)el.Element(M + "barPr")?.Element(M + "pos")?.Attribute(M + "val");
-        return new Bar(pos == "top", ReadContent(el.Element(M + "e"), d));
+        return new Bar(pos == "top", ReadSlot(el.Element(M + "e"), d));
     }
 
     /// <summary><c>m:groupChr</c>; the defaults are an underbrace (U+23DF) below the body.</summary>
@@ -35,10 +35,10 @@ internal static partial class OmmlReader
         var vertJc = (string?)pr?.Element(M + "vertJc")?.Attribute(M + "val");
         bool top = pos == "top";
         bool vertJcTop = (!top && vertJc == "top") || (top && vertJc == "bot" && OverUnderCommands.TryGetArrowCommand(chr, out _) && chr != "=");
-        return new GroupChar(chr, top, ReadContent(el.Element(M + "e"), d), vertJcTop);
+        return new GroupChar(chr, top, ReadSlot(el.Element(M + "e"), d), vertJcTop);
     }
 
     /// <summary><c>m:limLow</c> / <c>m:limUpp</c> outside a function name.</summary>
     private static FormulaNode ReadLimit(XElement el, List<Diagnostic> d) =>
-        new Limit(ReadContent(el.Element(M + "e"), d), ReadContent(el.Element(M + "lim"), d), el.Name.LocalName == "limUpp");
+        new Limit(ReadSlot(el.Element(M + "e"), d), ReadContent(el.Element(M + "lim"), d), el.Name.LocalName == "limUpp");
 }

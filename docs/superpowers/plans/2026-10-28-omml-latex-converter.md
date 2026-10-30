@@ -40,6 +40,7 @@
 - **Kiểu chữ script:** `scr="script"` xuất `\mathscr` (dạng chuẩn của MathLive; `\mathcal` vẫn được đọc sang `scr="script"`).
 - **Điểm căn hàng:** Word đánh dấu điểm căn trong `m:eqArr` bằng `<m:aln/>` trong `m:rPr` (ECMA-376 §22.1.2.3), không phải ký tự `&`. AST dùng nút riêng `AlignMark` cho điểm căn, tách khỏi `Run("&")` là ký tự `&` thật (LaTeX `\&`). Parser: trong dòng của `align`/`cases`/`gather`, `&` kết thúc hàng (nên không bao giờ là đối số hay toán hạng của lệnh đứng trước) và các phần được nối bằng `AlignMark`. Writer OMML: `AlignMark` thành `m:aln` trên run kế tiếp (mọi kiểu, kể cả `m:nor`), hoặc thành run rỗng có `m:aln` khi không có run nào theo sau. Reader: `m:aln` thành `AlignMark` (kể cả khi `m:t` rỗng), chỉ với run là con trực tiếp của `m:e` trong `m:eqArr` (hoặc qua vỏ `w:` trong suốt). `&` nguyên văn trong `m:t` là ký tự thật, ra LaTeX `\&`.
 - `Delimited` mất cỡ của `\bigl(` (ra ký tự trần, kèm cảnh báo `lossy`).
+- **Ô nhập (`\placeholder{}`):** `Placeholder` ↔ đối số rỗng; ở gốc hoặc lẫn trong hàng thì là `m:box` có `m:e` rỗng; reader đọc slot bắt buộc rỗng thành `Placeholder` (kể cả ô ma trận và hàng `m:eqArr`), trừ thân `m:nary`, `m:e`/`m:fName` của `m:func`, `m:lim`, `m:phant`, `m:sPre` và slot ẩn; chỉ số luôn bọc `{\placeholder{}}`; `\placeholder[id]{x}` giữ `x`, bỏ id, báo `lossy`.
 - Mã `Diagnostic.Code`: `out-of-scope`, `lossy`, `unsupported-omml`.
 
 ## Review Focus

@@ -28,7 +28,7 @@ public class ScriptTests
     [Fact] public void Nested_script_base_is_braced() => Check("{x^2}^3", SSup(SSup(R("x"), R("2")), R("3")));
     [Fact] public void Symbol_command_sup() => Check("x^\\alpha", SSup(R("x"), R("α")));
     [Fact] public void Single_braced_char_loses_braces() => Check("x^{2}", SSup(R("x"), R("2")), "x^2");
-    [Fact] public void Empty_sup_arg() => Check("x^{}", SSup(R("x"), ""));
+    [Fact] public void Empty_sup_arg() => Check("x^{}", SSup(R("x"), ""), "x^{\\placeholder{}}");
     [Fact] public void Command_base() => Check("\\alpha^2", SSup(R("α"), R("2")), "\\alpha^2");
 
     [Fact] public void Space_after_unbraced_script() => Check("x^2 y", SSup(R("x"), R("2")) + R("y"), "x^2 y");
@@ -83,8 +83,8 @@ public class ScriptTests
     [Fact] public void Prefix_script_sub_only() => Check("{}_a x", SPre(R("a"), "", R("x")), "{}_a x");
     [Fact] public void Empty_group_alone_is_empty() => Check("{}x", R("x"), "x");
     [Fact] public void Empty_group_then_end() => Check("{}", "", "");
-    [Fact] public void Empty_group_with_script_then_end() => Check("{}^2", SSup("", R("2")), "^2");
-    [Fact] public void No_base() => Check("^2", SSup("", R("2")));
+    [Fact] public void Empty_group_with_script_then_end() => Check("{}^2", SSup("", R("2")), "\\placeholder{}^2");
+    [Fact] public void No_base() => Check("^2", SSup("", R("2")), "\\placeholder{}^2");
 
     [Fact] public void Sqrt() => Check("\\sqrt{x}", Rad(R("x")));
     [Fact] public void Sqrt_single_atom() => Check("\\sqrt x", Rad(R("x")), "\\sqrt{x}");
@@ -92,7 +92,7 @@ public class ScriptTests
     [Fact] public void Sqrt_degree_with_closing_bracket() => Check("\\sqrt[{]}]{x}", Rad(R("x"), R("]")));
     [Fact] public void Sqrt_degree_with_closing_bracket_in_script() =>
         Check("\\sqrt[{]^2}]{x}", Rad(R("x"), SSup(R("]"), R("2"))));
-    [Fact] public void Sqrt_empty() => Check("\\sqrt{}", Rad(""));
+    [Fact] public void Sqrt_empty() => Check("\\sqrt{}", Rad(""), "\\sqrt{\\placeholder{}}");
     [Fact] public void Sqrt_with_sup() => Check("\\sqrt{x}^2", SSup(Rad(R("x")), R("2")));
     [Fact] public void Surd() => Check("\\surd", R("√"), "\\surd");
 
@@ -184,13 +184,13 @@ public class ScriptTests
     }
 
     [Fact] public void Empty_base_script_after_sibling_keeps_its_empty_base() =>
-        Check("a{{}}^2 b", R("a") + SSup("", R("2")) + R("b"));
+        Check("a{{}}^2 b", R("a") + SSup("", R("2")) + R("b"), "a\\placeholder{}^2 b");
     [Fact] public void Empty_base_script_last_in_row_after_sibling() =>
-        Check("a{}^2", R("a") + SSup("", R("2")));
+        Check("a{}^2", R("a") + SSup("", R("2")), "a\\placeholder{}^2");
     [Fact] public void Empty_base_script_first_in_row_stays_bare() =>
-        Check("^2 b", SSup("", R("2")) + R("b"), "^2 b");
+        Check("^2 b", SSup("", R("2")) + R("b"), "\\placeholder{}^2 b");
     [Fact] public void Double_empty_group_is_not_a_prefix_script_marker() =>
-        Check("{{}}^2 b", SSup("", R("2")) + R("b"), "^2 b");
+        Check("{{}}^2 b", SSup("", R("2")) + R("b"), "\\placeholder{}^2 b");
 
     /// <summary>A prime character in a run attaches to the character before it, except in normal text or at the start of a row.</summary>
     [Theory]

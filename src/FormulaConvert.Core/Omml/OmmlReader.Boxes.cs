@@ -27,7 +27,7 @@ internal static partial class OmmlReader
         if (ReadOnOff(pr, "strikeV", false)) edges |= BoxEdges.StrikeV;
         if (ReadOnOff(pr, "strikeBLTR", false)) edges |= BoxEdges.StrikeUp;
         if (ReadOnOff(pr, "strikeTLBR", false)) edges |= BoxEdges.StrikeDown;
-        return new BorderBox(edges, ReadContent(el.Element(M + "e"), d));
+        return new BorderBox(edges, ReadSlot(el.Element(M + "e"), d));
     }
 
     /// <summary><c>m:phant</c>; <c>m:show</c> defaults to on, the zero flags to off.</summary>

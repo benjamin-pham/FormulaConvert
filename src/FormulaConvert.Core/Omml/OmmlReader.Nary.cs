@@ -15,8 +15,8 @@ internal static partial class OmmlReader
         bool subSup = NaryTable.TryGetByChar(chr, out var info) && info.SubSupDefault;
         if ((string?)pr?.Element(M + "limLoc")?.Attribute(M + "val") is { } loc)
             subSup = loc == "subSup";
-        var sub = IsOn(pr?.Element(M + "subHide")) ? null : ReadContent(el.Element(M + "sub"), d);
-        var sup = IsOn(pr?.Element(M + "supHide")) ? null : ReadContent(el.Element(M + "sup"), d);
+        var sub = IsOn(pr?.Element(M + "subHide")) ? null : ReadSlot(el.Element(M + "sub"), d);
+        var sup = IsOn(pr?.Element(M + "supHide")) ? null : ReadSlot(el.Element(M + "sup"), d);
         return new Nary(chr, sub, sup, ReadContent(el.Element(M + "e"), d), subSup);
     }
 

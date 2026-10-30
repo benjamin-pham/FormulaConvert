@@ -7,9 +7,9 @@ internal static partial class OmmlReader
 {
     private static FormulaNode ReadSubSup(XElement el, bool sub, bool sup, List<Diagnostic> d) =>
         new Script(
-            ReadContent(el.Element(M + "e"), d),
-            sub ? ReadContent(el.Element(M + "sub"), d) : null,
-            sup ? ReadContent(el.Element(M + "sup"), d) : null);
+            ReadSlot(el.Element(M + "e"), d),
+            sub ? ReadSlot(el.Element(M + "sub"), d) : null,
+            sup ? ReadSlot(el.Element(M + "sup"), d) : null);
 
     /// <summary><c>m:sPre</c>: an empty sub or sup is "absent" (Word writes empty placeholders).</summary>
     private static FormulaNode ReadPreScript(XElement el, List<Diagnostic> d) =>
@@ -26,7 +26,7 @@ internal static partial class OmmlReader
         var hide = el.Element(M + "radPr")?.Element(M + "degHide");
         bool hidden = hide != null && ((string?)hide.Attribute(M + "val") ?? "1") is "1" or "true" or "on";
         var deg = el.Element(M + "deg");
-        var degree = hidden || deg == null ? null : ReadContent(deg, d);
-        return new Radical(degree, ReadContent(el.Element(M + "e"), d));
+        var degree = hidden || deg == null ? null : ReadSlot(deg, d);
+        return new Radical(degree, ReadSlot(el.Element(M + "e"), d));
     }
 }

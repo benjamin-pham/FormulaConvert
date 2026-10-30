@@ -70,7 +70,7 @@ public class FractionTests
         Assert.Empty(FormulaConverter.OmmlToLatex(OMath(F(R("a"), R("b"), "skw"))).Diagnostics);
     }
     [Fact] public void Pdiff() => Check("\\pdiff{f}{x}", F(R("∂f"), R("∂x")), "\\frac{\\partial f}{\\partial x}");
-    [Fact] public void Empty_frac() => Check("\\frac{}{}", F("", ""));
+    [Fact] public void Empty_frac() => Check("\\frac{}{}", F("", ""), "\\frac{\\placeholder{}}{\\placeholder{}}");
     [Fact] public void Nested_frac() => Check("\\frac{a}{\\frac{b}{c}}", F(R("a"), F(R("b"), R("c"))));
 
     [Fact]

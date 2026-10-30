@@ -17,6 +17,6 @@ internal static partial class OmmlReader
         };
         if (type == "lin")
             d.Add(new Diagnostic("lossy", "linear fraction (m:type lin) is read as a/b", -1));
-        return new Frac(ReadContent(f.Element(M + "num"), d), ReadContent(f.Element(M + "den"), d), kind);
+        return new Frac(ReadSlot(f.Element(M + "num"), d), ReadSlot(f.Element(M + "den"), d), kind);
     }
 }

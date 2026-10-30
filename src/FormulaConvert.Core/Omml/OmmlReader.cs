@@ -39,6 +39,16 @@ internal static partial class OmmlReader
     }
 
     /// <summary>
+    /// Reads a required slot element (<c>m:num</c>, <c>m:den</c>, <c>m:e</c>, etc.).
+    /// Returns a <see cref="Placeholder"/> when the slot is empty or missing.
+    /// </summary>
+    internal static FormulaNode ReadSlot(XElement? el, List<Diagnostic> d, bool inEqArrayRow = false)
+    {
+        var content = ReadContent(el, d, inEqArrayRow);
+        return content is FormulaRow { Items.Count: 0 } ? new Placeholder() : content;
+    }
+
+    /// <summary>
     /// A non-<c>m</c> element among math content: Word wrappers are read through (<see cref="TransparentW"/>) or
     /// skipped (<see cref="DeletedW"/>); any other element is skipped, with a warning when it holds math.
     /// </summary>
@@ -124,7 +134,12 @@ internal static partial class OmmlReader
                     items.Add(ReadBorderBox(el, d));
                     break;
                 case "box":
-                    if (el.Element(M + "e") is { } boxBody) ReadInto(boxBody, items, d);
+                    var boxItems = new List<FormulaNode>();
+                    if (el.Element(M + "e") is { } boxBody) ReadInto(boxBody, boxItems, d, inEqArrayRow);
+                    if (boxItems.Count == 0)
+                        items.Add(new Placeholder());
+                    else
+                        items.AddRange(boxItems);
                     break;
                 case "phant":
                     items.Add(ReadPhantom(el, d));

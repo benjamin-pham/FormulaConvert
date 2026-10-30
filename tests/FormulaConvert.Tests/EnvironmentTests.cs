@@ -137,17 +137,17 @@ public class EnvironmentTests
 
     [Fact]
     public void Short_row_is_padded() =>
-        Check("\\begin{matrix}a&b\\\\c\\end{matrix}", Mx([[R("a"), R("b")], [R("c"), ""]]), "\\begin{matrix}a&b\\\\c&\\end{matrix}");
+        Check("\\begin{matrix}a&b\\\\c\\end{matrix}", Mx([[R("a"), R("b")], [R("c"), ""]]), "\\begin{matrix}a&b\\\\c&\\placeholder{}\\end{matrix}");
 
     [Fact]
     public void Trailing_row_break_is_dropped() =>
         Check("\\begin{matrix}a\\\\\\end{matrix}", Mx([[R("a")]]), "\\begin{matrix}a\\end{matrix}");
 
-    [Fact] public void Empty_cells() => Check("\\begin{matrix}&a\\\\b&\\end{matrix}", Mx([["", R("a")], [R("b"), ""]]));
+    [Fact] public void Empty_cells() => Check("\\begin{matrix}&a\\\\b&\\end{matrix}", Mx([["", R("a")], [R("b"), ""]]), "\\begin{matrix}\\placeholder{}&a\\\\b&\\placeholder{}\\end{matrix}");
     // OMML has no empty m:m / m:eqArr / m:mr: an empty environment is one empty cell.
-    [Fact] public void Empty_body() => Check("\\begin{matrix}\\end{matrix}", Mx([[""]]));
-    [Fact] public void Empty_pmatrix_body() => Check("\\begin{pmatrix}\\end{pmatrix}", Dl("(", ")", Mx([[""]])));
-    [Fact] public void Empty_align_body() => Check("\\begin{gathered}\\end{gathered}", EqA(""));
+    [Fact] public void Empty_body() => Check("\\begin{matrix}\\end{matrix}", Mx([[""]]), "\\begin{matrix}\\placeholder{}\\end{matrix}");
+    [Fact] public void Empty_pmatrix_body() => Check("\\begin{pmatrix}\\end{pmatrix}", Dl("(", ")", Mx([[""]])), "\\begin{pmatrix}\\placeholder{}\\end{pmatrix}");
+    [Fact] public void Empty_align_body() => Check("\\begin{gathered}\\end{gathered}", EqA(""), "\\begin{gathered}\\placeholder{}\\end{gathered}");
 
     [Fact]
     public void Omml_ragged_rows_are_padded_when_written_back()
@@ -257,7 +257,7 @@ public class EnvironmentTests
     {
         var omml = OMath("<m:m><m:mPr><m:plcHide m:val=\"1\"/><m:mcs><m:mc><m:mcPr><m:count m:val=\"2\"/><m:mcJc m:val=\"right\"/></m:mcPr></m:mc></m:mcs></m:mPr>"
             + "<m:mr><m:e>" + R("a") + "</m:e><m:e>" + R("b") + "</m:e></m:mr><m:mr><m:e><m:ctrlPr/></m:e></m:mr></m:m>");
-        Assert.Equal("\\begin{array}{rr}a&b\\\\\\end{array}", FormulaConverter.OmmlToLatex(omml).Output);
+        Assert.Equal("\\begin{array}{rr}a&b\\\\\\placeholder{}\\end{array}", FormulaConverter.OmmlToLatex(omml).Output);
     }
 
     [Fact]
@@ -322,7 +322,7 @@ public class EnvironmentTests
 
     [Fact]
     public void Later_row_wider_than_first_pads_earlier_rows() =>
-        Check("\\begin{matrix}a\\\\b&c\\end{matrix}", Mx([[R("a"), ""], [R("b"), R("c")]]), "\\begin{matrix}a&\\\\b&c\\end{matrix}");
+        Check("\\begin{matrix}a\\\\b&c\\end{matrix}", Mx([[R("a"), ""], [R("b"), R("c")]]), "\\begin{matrix}a&\\placeholder{}\\\\b&c\\end{matrix}");
 
     [Fact]
     public void Ampersand_inside_left_right_in_cell_fails() =>

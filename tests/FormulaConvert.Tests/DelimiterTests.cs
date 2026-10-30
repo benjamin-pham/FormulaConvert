@@ -46,7 +46,7 @@ public class DelimiterTests
     [Fact] public void Middle_absent() => Check("\\left(a\\middle.b\\right)", Dl("(", ")", "", R("a"), R("b")));
     [Fact] public void Lparen_rbrack() => Check("\\left\\lparen \\frac1x \\right\\rbrack", Dl("(", "]", null, F(R("1"), R("x"))), "\\left(\\frac{1}{x}\\right]");
     [Fact] public void Nested() => Check("\\left(\\left[x\\right]\\right)", Dl("(", ")", null, Dl("[", "]", null, R("x"))));
-    [Fact] public void Empty_body() => Check("\\left(\\right)", Dl("(", ")", null, ""));
+    [Fact] public void Empty_body() => Check("\\left(\\right)", Dl("(", ")", null, ""), "\\left(\\placeholder{}\\right)");
     [Fact] public void With_scripts() => Check("\\left(x\\right)^2", "<m:sSup><m:e>" + Dl("(", ")", null, R("x")) + "</m:e><m:sup>" + R("2") + "</m:sup></m:sSup>");
     [Fact] public void Fraction_inside() => Check("\\left(a\\over b\\right)", Dl("(", ")", null, F(R("a"), R("b"))), "\\left(\\frac{a}{b}\\right)");
 
@@ -156,7 +156,7 @@ public class DelimiterTests
     [Fact]
     public void Reader_empty_d_does_not_crash()
     {
-        Assert.Equal("\\left(\\right)", FormulaConverter.OmmlToLatex(OMath("<m:d/>")).Output);
+        Assert.Equal("\\left(\\placeholder{}\\right)", FormulaConverter.OmmlToLatex(OMath("<m:d/>")).Output);
     }
 
     [Fact]

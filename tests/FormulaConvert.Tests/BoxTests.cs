@@ -163,7 +163,7 @@ public class BoxTests
     [Theory]
     [InlineData("<m:box><m:boxPr><m:diff m:val=\"1\"/></m:boxPr><m:e><m:r><m:t>dx</m:t></m:r></m:e></m:box>", "dx")]
     [InlineData("<m:box><m:boxPr><m:opEmu m:val=\"1\"/></m:boxPr><m:e><m:r><m:t>:=</m:t></m:r></m:e></m:box>", ":=")]
-    [InlineData("<m:box><m:boxPr/></m:box>", "")]
+    [InlineData("<m:box><m:boxPr/></m:box>", @"\placeholder{}")]
     public void Reader_logical_box_reads_body_without_diagnostics(string inner, string expected)
     {
         var r = FormulaConverter.OmmlToLatex(Wrap(inner));

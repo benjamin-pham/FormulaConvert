@@ -16,8 +16,8 @@ internal static partial class OmmlReader
     private static FormulaNode ReadDelimited(XElement el, List<Diagnostic> d)
     {
         var props = el.Element(M + "dPr");
-        var parts = el.Elements(M + "e").Select(e => ReadContent(e, d)).ToList();
-        if (parts.Count == 0) parts.Add(FormulaRow.Empty);
+        var parts = el.Elements(M + "e").Select(e => ReadSlot(e, d)).ToList();
+        if (parts.Count == 0) parts.Add(new Placeholder());
         var open = ReadDelimiterChar(props?.Element(M + "begChr"), "(", d);
         var close = ReadDelimiterChar(props?.Element(M + "endChr"), ")", d);
         var separator = parts.Count > 1 ? ReadDelimiterChar(props?.Element(M + "sepChr"), "|", d) : "";
