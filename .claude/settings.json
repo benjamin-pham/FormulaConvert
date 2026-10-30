@@ -1,13 +1,7 @@
 {
-    "extraKnownMarketplaces": {
-        "superpowers-dev": {
-            "source": {
-                "source": "directory",
-                "path": "./.agents/plugins/superpowers"
-            }
-        }
-    },
     "enabledPlugins": {
-        "superpowers@superpowers-dev": true
+        "superpowers@superpowers-dev": true,
+        "cloudflare@cloudflare-dev": true,
+        "caveman@caveman": true
     }
 }

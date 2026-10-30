@@ -1,0 +1,14 @@
+{
+    "name": "cloudflare-dev",
+    "description": "Cloudflare security-audit skill",
+    "owner": {
+        "name": "Cloudflare"
+    },
+    "plugins": [
+        {
+            "name": "cloudflare",
+            "description": "Security audit skill for codebases",
+            "source": "./"
+        }
+    ]
+}
